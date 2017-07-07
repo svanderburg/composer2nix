@@ -1,0 +1,19 @@
+{
+  "name": "svanderburg/composer2nix",
+  "description": "Generate Nix expressions to build PHP composer packages",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Sander van der Burg",
+      "email": "svanderburg@gmail.com",
+      "homepage": "http://sandervanderburg.nl"
+    }
+  ],
+  
+  "autoload": {
+    "psr-4": { "Composer2Nix\\": "src/Composer2Nix" }
+  },
+
+  "bin": [ "bin/composer2nix" ]
+}
