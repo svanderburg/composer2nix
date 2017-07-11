@@ -25,6 +25,7 @@ Options:
                          packages (defaults to: composer-env.nix)
      --prefer-source     Forces installation from package sources when possible
      --prefer-dist       Forces installation from package dist
+     --no-dev            Do not install the development packages
      --name              Name of the generated package (defaults to the name
                          provided in the composer.json file)
      --no-copy-composer-env
@@ -51,6 +52,7 @@ $options = getopt("hv", array(
 	"composer-env:",
 	"prefer-source",
 	"prefer-dist",
+	"no-dev",
 	"name:",
 	"no-copy-composer-env",
 	"help",
@@ -105,13 +107,18 @@ else
 
 $noCopyComposerEnv = array_key_exists("no-copy-composer-env", $options);
 
-$installType = "dist"; // TODO: consult composer.json's preferred-install property. defaults to: auto
+$preferredInstall = "dist"; // TODO: consult composer.json's preferred-install property. defaults to: auto
 
 if(array_key_exists("prefer-source", $options))
-	$installType = "source";
+	$preferredInstall = "source";
 
 if(array_key_exists("prefer-dist", $options))
-	$installType = "dist";
+	$preferredInstall = "dist";
+
+if(array_key_exists("no-dev", $options))
+	$noDev = true;
+else
+	$noDev = false;
 
 if(array_key_exists("name", $options))
 	$name = $options["name"];
@@ -122,7 +129,7 @@ else
 
 try
 {
-	Generator::generateNixExpressions($name, $installType, $configFile, $lockFile, $outputFile, $compositionFile, $composerEnvFile, $noCopyComposerEnv);
+	Generator::generateNixExpressions($name, $preferredInstall, $noDev, $configFile, $lockFile, $outputFile, $compositionFile, $composerEnvFile, $noCopyComposerEnv);
 }
 catch(Exception $ex)
 {

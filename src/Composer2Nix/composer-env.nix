@@ -64,7 +64,7 @@ rec {
 
           if($composerLockStr === false)
           {
-              print("Cannot open composer.lock contents");
+              fwrite(STDERR, "Cannot open composer.lock contents\n");
               exit(1);
           }
           else
