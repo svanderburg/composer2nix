@@ -6,10 +6,16 @@ class Generator
 {
 	private static function composeNixFilePath($path)
 	{
-		if((strlen($path) > 0 && substr($path, 0, 1) === "/") || (strlen($path) > 1 && substr($path, 0, 2) === "./"))
-			return $path;
+		// Prefix certain relative paths so that they are of the path type in the Nix expression language
+		if((strlen($path) > 0 && substr($path, 0, 1) === "/") || (strlen($path) > 1 && substr($path, 0, 2) === "./") || (strlen($path) > 2 && substr($path, 0, 3) === "../"))
+			$normalizedPath = $path;
 		else
-			return "./".$path;
+			$normalizedPath = "./".$path;
+
+		if(strpos($normalizedPath, ' ') === false)
+			return $normalizedPath; // Path names without spaces don't require any escaping
+		else
+			return '/. + "'.$normalizedPath.'"'; // Compose a path containing spaces
 	}
 
 	private static function selectSourceObject($preferredInstall, $package)
@@ -50,12 +56,17 @@ class Generator
 
 			switch($sourceObj["type"])
 			{
+				case "path":
+					fwrite($handle, '    "'.$package["name"].'" = '.Generator::composeNixFilePath($sourceObj['url']).';'."\n");
+					break;
+
 				case "zip":
 					$hash = shell_exec('nix-prefetch-url "'.$sourceObj['url'].'"');
 					fwrite($handle, '    "'.$package["name"].'" = composerEnv.buildZipPackage {'."\n");
 					fwrite($handle, '      name = "'.strtr($package["name"], "/", "-").'-'.$sourceObj["reference"].'";'."\n");
 					fwrite($handle, '      url = "'.$sourceObj["url"].'";'."\n");
 					fwrite($handle, '      sha256 = "'.substr($hash, 0, -1).'";'."\n");
+					fwrite($handle, "    };\n");
 					break;
 				case "git":
 					$outputStr = shell_exec('nix-prefetch-git "'.$sourceObj['url'].'" '.$sourceObj["reference"]);
@@ -68,6 +79,7 @@ class Generator
 					fwrite($handle, '      url = "'.$sourceObj["url"].'";'."\n");
 					fwrite($handle, '      rev = "'.$sourceObj["reference"].'";'."\n");
 					fwrite($handle, '      sha256 = "'.$hash.'";'."\n");
+					fwrite($handle, "    };\n");
 					break;
 				case "hg":
 					$outputStr = shell_exec('nix-prefetch-hg "'.$sourceObj['url'].'" '.$sourceObj["reference"]);
@@ -80,11 +92,10 @@ class Generator
 					fwrite($handle, '      url = "'.$sourceObj["url"].'";'."\n");
 					fwrite($handle, '      rev = "'.$sourceObj["reference"].'";'."\n");
 					fwrite($handle, '      sha256 = "'.$hash.'";'."\n");
+					fwrite($handle, "    };\n");
 				default:
 					throw new Exception("Cannot convert dependency of type: ".$sourceObj["type"]);
 			}
-
-			fwrite($handle, "    };\n");
 		}
 
 		fwrite($handle, "  };\n");

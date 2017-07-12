@@ -124,7 +124,8 @@ Limitations
 ===========
 Currently, the state of this tool is that it is just a proof on concept
 implementation. As a result, it is lacking many features and probably buggy.
-Most importantly, only the `zip`, `git`, and `hg` dependencies are supported.
+Most importantly, only the `path`, `zip`, `git`, and `hg` dependencies are
+supported.
 
 License
 =======
