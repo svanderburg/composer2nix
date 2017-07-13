@@ -39,14 +39,14 @@ class Generator
 		}
 	}
 
-	private static function generatePackagesExpression($outputFile, $name, $preferredInstall, array $packages)
+	private static function generatePackagesExpression($outputFile, $name, $preferredInstall, array $packages, $executable)
 	{
 		$handle = fopen($outputFile, "w");
 
 		if($handle === false)
 			throw new Exception("Cannot write to: ".$outputFile);
 
-		fwrite($handle, "{composerEnv, fetchgit ? null}:\n\n");
+		fwrite($handle, "{composerEnv, fetchurl, fetchgit ? null, fetchhg ? null, fetchsvn ? null}:\n\n");
 		fwrite($handle, "let\n");
 		fwrite($handle, "  dependencies = {\n");
 
@@ -61,13 +61,29 @@ class Generator
 					break;
 
 				case "zip":
-					$hash = shell_exec('nix-prefetch-url "'.$sourceObj['url'].'"');
 					fwrite($handle, '    "'.$package["name"].'" = composerEnv.buildZipPackage {'."\n");
-					fwrite($handle, '      name = "'.strtr($package["name"], "/", "-").'-'.$sourceObj["reference"].'";'."\n");
-					fwrite($handle, '      url = "'.$sourceObj["url"].'";'."\n");
-					fwrite($handle, '      sha256 = "'.substr($hash, 0, -1).'";'."\n");
+
+					if($sourceObj["reference"] == "")
+						$reference = "";
+					else
+						$reference = "-".$sourceObj["reference"];
+
+					fwrite($handle, '      name = "'.strtr($package["name"], "/", "-").$reference.'";'."\n");
+
+					if(substr($sourceObj["url"], 0, 7) === "http://" || substr($sourceObj["url"], 0, 8) === "https://")
+					{
+						$hash = shell_exec('nix-prefetch-url "'.$sourceObj['url'].'"');
+						fwrite($handle, "      src = fetchurl {\n");
+						fwrite($handle, '        url = "'.$sourceObj["url"].'";'."\n");
+						fwrite($handle, '        sha256 = "'.substr($hash, 0, -1).'";'."\n");
+						fwrite($handle, "      };\n");
+					}
+					else
+						fwrite($handle, "      src = ".Generator::composeNixFilePath($sourceObj['url']).";\n");
+
 					fwrite($handle, "    };\n");
 					break;
+
 				case "git":
 					$outputStr = shell_exec('nix-prefetch-git "'.$sourceObj['url'].'" '.$sourceObj["reference"]);
 
@@ -81,18 +97,29 @@ class Generator
 					fwrite($handle, '      sha256 = "'.$hash.'";'."\n");
 					fwrite($handle, "    };\n");
 					break;
-				case "hg":
-					$outputStr = shell_exec('nix-prefetch-hg "'.$sourceObj['url'].'" '.$sourceObj["reference"]);
 
-					$output = json_decode($outputStr, true);
-					$hash = $output["sha256"];
+				case "hg":
+					$hash = shell_exec('nix-prefetch-hg "'.$sourceObj['url'].'" '.$sourceObj["reference"]);
 
 					fwrite($handle, '    "'.$package["name"].'" = fetchhg {'."\n");
 					fwrite($handle, '      name = "'.strtr($package["name"], "/", "-").'-'.$sourceObj["reference"].'";'."\n");
 					fwrite($handle, '      url = "'.$sourceObj["url"].'";'."\n");
 					fwrite($handle, '      rev = "'.$sourceObj["reference"].'";'."\n");
-					fwrite($handle, '      sha256 = "'.$hash.'";'."\n");
+					fwrite($handle, '      sha256 = "'.substr($hash, 0, -1).'";'."\n");
 					fwrite($handle, "    };\n");
+					break;
+
+				case "svn":
+					$hash = shell_exec('nix-prefetch-svn "'.$sourceObj['url'].'" '.$sourceObj["reference"]);
+
+					fwrite($handle, '    "'.$package["name"].'" = fetchsvn {'."\n");
+					fwrite($handle, '      name = "'.strtr($package["name"], "/", "-").'-'.$sourceObj["reference"].'";'."\n");
+					fwrite($handle, '      url = "'.$sourceObj["url"].'";'."\n");
+					fwrite($handle, '      rev = "'.$sourceObj["reference"].'";'."\n");
+					fwrite($handle, '      sha256 = "'.substr($hash, 0, -1).'";'."\n");
+					fwrite($handle, "    };\n");
+					break;
+
 				default:
 					throw new Exception("Cannot convert dependency of type: ".$sourceObj["type"]);
 			}
@@ -103,6 +130,7 @@ class Generator
 		fwrite($handle, "composerEnv.buildPackage {\n");
 		fwrite($handle, '  name = "'.$name.'";'."\n");
 		fwrite($handle, "  src = ./.;\n");
+		fwrite($handle, "  executable = ".($executable ? "true" : "false").";\n");
 		fwrite($handle, "  inherit dependencies;\n");
 		fwrite($handle, "}\n");
 
@@ -127,13 +155,13 @@ class Generator
 		fwrite($handle, "in\n");
 		fwrite($handle, "import ".Generator::composeNixFilePath($outputFile)." {\n");
 		fwrite($handle, "  inherit composerEnv;\n");
-		fwrite($handle, "  inherit (pkgs) fetchgit;\n");
+		fwrite($handle, "  inherit (pkgs) fetchurl fetchgit fetchhg fetchsvn;\n");
 		fwrite($handle, "}\n");
 
 		fclose($handle);
 	}
 
-	public static function generateNixExpressions($name, $preferredInstall, $noDev, $configFile, $lockFile, $outputFile, $compositionFile, $composerEnvFile, $noCopyComposerEnv)
+	public static function generateNixExpressions($name, $executable, $preferredInstall, $noDev, $configFile, $lockFile, $outputFile, $compositionFile, $composerEnvFile, $noCopyComposerEnv)
 	{
 		/* Open the composer.json file and decode it */
 		$composerJSONStr = file_get_contents($configFile);
@@ -183,7 +211,7 @@ class Generator
 			$packages = array();
 
 		/* Generate packages expression */
-		Generator::generatePackagesExpression($outputFile, $name, $preferredInstall, $packages);
+		Generator::generatePackagesExpression($outputFile, $name, $preferredInstall, $packages, $executable);
 
 		/* Generate composition expression */
 		Generator::generateCompositionExpression($compositionFile, $outputFile, $composerEnvFile);

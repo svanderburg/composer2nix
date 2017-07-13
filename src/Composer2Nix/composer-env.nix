@@ -36,12 +36,9 @@ rec {
     };
   };
 
-  buildZipPackage = { name, url, sha256 }:
+  buildZipPackage = { name, src }:
     stdenv.mkDerivation {
-      inherit name;
-      src = fetchurl {
-        inherit url sha256;
-      };
+      inherit name src;
       buildInputs = [ unzip ];
       buildCommand = ''
         unzip $src
@@ -52,7 +49,7 @@ rec {
       '';
     };
 
-  buildPackage = { name, src, dependencies ? [], removeComposerArtifacts ? false }:
+  buildPackage = { name, src, dependencies ? [], executable ? false, removeComposerArtifacts ? false }:
     let
       reconstructInstalled = writeTextFile {
         name = "reconstructinstalled.php";
@@ -76,14 +73,55 @@ rec {
           ?>
         '';
       };
+
+      constructBin = writeTextFile {
+        name = "constructbin.php";
+        executable = true;
+        text = ''
+          #! ${php}/bin/php
+          <?php
+          $composerJSONStr = file_get_contents($argv[1]);
+
+          if($composerJSONStr === false)
+          {
+              fwrite(STDERR, "Cannot open composer.json contents\n");
+              exit(1);
+          }
+          else
+          {
+              $config = json_decode($composerJSONStr, true);
+
+              if(array_key_exists("bin-dir", $config))
+                  $binDir = $config["bin-dir"];
+              else
+                  $binDir = "bin";
+
+              if(array_key_exists("bin", $config))
+              {
+                  mkdir("vendor/".$binDir);
+                  
+                  foreach($config["bin"] as $bin)
+                      symlink("../../".$bin, "vendor/".$binDir."/".basename($bin));
+              }
+          }
+          ?>
+        '';
+      };
     in
     stdenv.mkDerivation {
       inherit name src;
       buildInputs = [ php composer ];
       buildCommand = ''
-        cp -av $src $out
-        chmod -R u+w $out
-        cd $out
+        ${if executable then ''
+          mkdir -p $out/share/php
+          cp -av $src $out/share/php/$name
+          chmod -R u+w $out/share/php/$name
+          cd $out/share/php/$name
+        '' else ''
+          cp -av $src $out
+          chmod -R u+w $out
+          cd $out
+        ''}
 
         # Remove unwanted files
         rm -f *.nix
@@ -114,6 +152,12 @@ rec {
 
         # Run the install step as a validation to confirm that everything works out as expected
         composer install --optimize-autoloader
+
+        ${stdenv.lib.optionalString executable ''
+          ${constructBin} composer.json
+          ln -s $(pwd)/vendor/bin $out/bin
+          patchShebangs $out/bin
+        ''}
 
         ${stdenv.lib.optionalString (removeComposerArtifacts) ''
           # Remove composer stuff

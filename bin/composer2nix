@@ -28,6 +28,8 @@ Options:
      --no-dev            Do not install the development packages
      --name              Name of the generated package (defaults to the name
                          provided in the composer.json file)
+     --executable        Generate a Nix package for an executable as opposed to
+                         a library or web application.
      --no-copy-composer-env
                          Do not create a copy of the Nix expression that builds
                          composer packages
@@ -54,6 +56,7 @@ $options = getopt("hv", array(
 	"prefer-dist",
 	"no-dev",
 	"name:",
+	"executable",
 	"no-copy-composer-env",
 	"help",
 	"version"
@@ -115,21 +118,20 @@ if(array_key_exists("prefer-source", $options))
 if(array_key_exists("prefer-dist", $options))
 	$preferredInstall = "dist";
 
-if(array_key_exists("no-dev", $options))
-	$noDev = true;
-else
-	$noDev = false;
+$noDev = array_key_exists("no-dev", $options);
 
 if(array_key_exists("name", $options))
 	$name = $options["name"];
 else
 	$name = null;
 
+$executable = array_key_exists("executable", $options);
+
 /* Execute the generator */
 
 try
 {
-	Generator::generateNixExpressions($name, $preferredInstall, $noDev, $configFile, $lockFile, $outputFile, $compositionFile, $composerEnvFile, $noCopyComposerEnv);
+	Generator::generateNixExpressions($name, $executable, $preferredInstall, $noDev, $configFile, $lockFile, $outputFile, $compositionFile, $composerEnvFile, $noCopyComposerEnv);
 }
 catch(Exception $ex)
 {
