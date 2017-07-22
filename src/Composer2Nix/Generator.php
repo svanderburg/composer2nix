@@ -150,7 +150,7 @@ class Generator
 
 		fwrite($handle, "let\n");
 		fwrite($handle, "  composerEnv = import ".Generator::composeNixFilePath($composerEnvFile)." {\n");
-		fwrite($handle, "    inherit (pkgs) stdenv writeTextFile fetchurl php unzip;\n");
+		fwrite($handle, "    inherit (pkgs) stdenv writeTextFile fetchurl php unzip jq;\n");
 		fwrite($handle, "  };\n");
 		fwrite($handle, "in\n");
 		fwrite($handle, "import ".Generator::composeNixFilePath($outputFile)." {\n");

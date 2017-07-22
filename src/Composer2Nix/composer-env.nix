@@ -1,6 +1,6 @@
 # This file originates from composer2nix
 
-{ stdenv, writeTextFile, fetchurl, php, unzip }:
+{ stdenv, writeTextFile, fetchurl, php, unzip, jq }:
 
 rec {
   composer = stdenv.mkDerivation {
@@ -139,9 +139,14 @@ rec {
             dependency = dependencies.${dependencyName};
           in
           ''
-            vendorDir="$(dirname ${dependencyName})"
+            if [ -f "${dependency}/composer.json" ]; then
+              targetDir="${dependencyName}/$(${jq}/bin/jq -r '.["target-dir"] | if . then . else "" end' ${dependency}/composer.json)"
+            else
+              targetDir="${dependencyName}"
+            fi
+            vendorDir="$(dirname $targetDir)"
             mkdir -p "$vendorDir"
-            ln -s "${dependency}" "$vendorDir/$(basename "${dependencyName}")"
+            ln -s "${dependency}" "$vendorDir/$(basename "$targetDir")"
           '') (builtins.attrNames dependencies)}
         cd ..
 
