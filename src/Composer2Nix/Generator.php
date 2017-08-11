@@ -22,7 +22,6 @@ class Generator
 	{
 		if($preferredInstall === "source")
 		{
-			// Use the source unless no source has been provided
 			if(array_key_exists("source", $package))
 				return $package["source"];
 			else if(array_key_exists("dist", $package))
@@ -34,6 +33,8 @@ class Generator
 		{
 			if(array_key_exists("dist", $package))
 				return $package["dist"];
+			else if(array_key_exists("source", $package))
+				return $package["source"];
 			else
 				throw new Exception("Encountered a dangling package reference");
 		}

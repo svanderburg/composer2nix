@@ -128,6 +128,9 @@ rec {
 
         export HOME=$TMPDIR
 
+        # Remove the provided vendor folder if it exists
+        rm -Rf vendor
+
         # Reconstruct the installed.json file from the lock file
         mkdir -p vendor/composer
         ${reconstructInstalled} composer.lock > vendor/composer/installed.json
