@@ -142,9 +142,15 @@ rec {
             dependency = dependencies.${dependencyName};
           in
           ''
-            vendorDir="$(dirname ${dependencyName})"
-            mkdir -p "$vendorDir"
-            ln -s "${dependency}" "$vendorDir/$(basename "${dependencyName}")"
+            ${if dependency.targetDir == "" then ''
+              vendorDir="$(dirname ${dependencyName})"
+              mkdir -p "$vendorDir"
+              ln -s "${dependency.src}" "$vendorDir/$(basename "${dependencyName}")"
+            '' else ''
+              namespaceDir="${dependencyName}/$(dirname "${dependency.targetDir}")"
+              mkdir -p "$namespaceDir"
+              ln -s "${dependency.src}" "$namespaceDir/$(basename "${dependency.targetDir}")"
+            ''}
           '') (builtins.attrNames dependencies)}
         cd ..
 

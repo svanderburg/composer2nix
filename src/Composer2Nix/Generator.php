@@ -53,34 +53,43 @@ class Generator
 
 		foreach($packages as $package)
 		{
+			fwrite($handle, '    "'.$package["name"].'" = {'."\n");
+
+			if(array_key_exists("target-dir", $package))
+				$targetDir = $package["target-dir"];
+			else
+				$targetDir = "";
+
+			fwrite($handle, '      targetDir = "'.$targetDir.'";'."\n");
+
 			$sourceObj = Generator::selectSourceObject($preferredInstall, $package);
 
 			switch($sourceObj["type"])
 			{
 				case "path":
-					fwrite($handle, '    "'.$package["name"].'" = '.Generator::composeNixFilePath($sourceObj['url']).';'."\n");
+					fwrite($handle, '      src = '.Generator::composeNixFilePath($sourceObj['url']).";\n");
 					break;
 
 				case "zip":
-					fwrite($handle, '    "'.$package["name"].'" = composerEnv.buildZipPackage {'."\n");
+					fwrite($handle, "      src = composerEnv.buildZipPackage {\n");
 
 					if($sourceObj["reference"] == "")
 						$reference = "";
 					else
 						$reference = "-".$sourceObj["reference"];
 
-					fwrite($handle, '      name = "'.strtr($package["name"], "/", "-").$reference.'";'."\n");
+					fwrite($handle, '        name = "'.strtr($package["name"], "/", "-").$reference.'";'."\n");
 
 					if(substr($sourceObj["url"], 0, 7) === "http://" || substr($sourceObj["url"], 0, 8) === "https://")
 					{
 						$hash = shell_exec('nix-prefetch-url "'.$sourceObj['url'].'"');
-						fwrite($handle, "      src = fetchurl {\n");
-						fwrite($handle, '        url = "'.$sourceObj["url"].'";'."\n");
-						fwrite($handle, '        sha256 = "'.substr($hash, 0, -1).'";'."\n");
-						fwrite($handle, "      };\n");
+						fwrite($handle, "        src = fetchurl {\n");
+						fwrite($handle, '          url = "'.$sourceObj["url"].'";'."\n");
+						fwrite($handle, '          sha256 = "'.substr($hash, 0, -1).'";'."\n");
+						fwrite($handle, "        };\n");
 					}
 					else
-						fwrite($handle, "      src = ".Generator::composeNixFilePath($sourceObj['url']).";\n");
+						fwrite($handle, "        src = ".Generator::composeNixFilePath($sourceObj['url']).";\n");
 
 					fwrite($handle, "    };\n");
 					break;
@@ -91,39 +100,41 @@ class Generator
 					$output = json_decode($outputStr, true);
 					$hash = $output["sha256"];
 
-					fwrite($handle, '    "'.$package["name"].'" = fetchgit {'."\n");
-					fwrite($handle, '      name = "'.strtr($package["name"], "/", "-").'-'.$sourceObj["reference"].'";'."\n");
-					fwrite($handle, '      url = "'.$sourceObj["url"].'";'."\n");
-					fwrite($handle, '      rev = "'.$sourceObj["reference"].'";'."\n");
-					fwrite($handle, '      sha256 = "'.$hash.'";'."\n");
-					fwrite($handle, "    };\n");
+					fwrite($handle, "      src = fetchgit {\n");
+					fwrite($handle, '        name = "'.strtr($package["name"], "/", "-").'-'.$sourceObj["reference"].'";'."\n");
+					fwrite($handle, '        url = "'.$sourceObj["url"].'";'."\n");
+					fwrite($handle, '        rev = "'.$sourceObj["reference"].'";'."\n");
+					fwrite($handle, '        sha256 = "'.$hash.'";'."\n");
+					fwrite($handle, "      };\n");
 					break;
 
 				case "hg":
 					$hash = shell_exec('nix-prefetch-hg "'.$sourceObj['url'].'" '.$sourceObj["reference"]);
 
-					fwrite($handle, '    "'.$package["name"].'" = fetchhg {'."\n");
-					fwrite($handle, '      name = "'.strtr($package["name"], "/", "-").'-'.$sourceObj["reference"].'";'."\n");
-					fwrite($handle, '      url = "'.$sourceObj["url"].'";'."\n");
-					fwrite($handle, '      rev = "'.$sourceObj["reference"].'";'."\n");
-					fwrite($handle, '      sha256 = "'.substr($hash, 0, -1).'";'."\n");
-					fwrite($handle, "    };\n");
+					fwrite($handle, "      src = fetchhg {\n");
+					fwrite($handle, '        name = "'.strtr($package["name"], "/", "-").'-'.$sourceObj["reference"].'";'."\n");
+					fwrite($handle, '        url = "'.$sourceObj["url"].'";'."\n");
+					fwrite($handle, '        rev = "'.$sourceObj["reference"].'";'."\n");
+					fwrite($handle, '        sha256 = "'.substr($hash, 0, -1).'";'."\n");
+					fwrite($handle, "      };\n");
 					break;
 
 				case "svn":
 					$hash = shell_exec('nix-prefetch-svn "'.$sourceObj['url'].'" '.$sourceObj["reference"]);
 
-					fwrite($handle, '    "'.$package["name"].'" = fetchsvn {'."\n");
-					fwrite($handle, '      name = "'.strtr($package["name"], "/", "-").'-'.$sourceObj["reference"].'";'."\n");
-					fwrite($handle, '      url = "'.$sourceObj["url"].'";'."\n");
-					fwrite($handle, '      rev = "'.$sourceObj["reference"].'";'."\n");
-					fwrite($handle, '      sha256 = "'.substr($hash, 0, -1).'";'."\n");
-					fwrite($handle, "    };\n");
+					fwrite($handle, "      src = fetchsvn {\n");
+					fwrite($handle, '        name = "'.strtr($package["name"], "/", "-").'-'.$sourceObj["reference"].'";'."\n");
+					fwrite($handle, '        url = "'.$sourceObj["url"].'";'."\n");
+					fwrite($handle, '        rev = "'.$sourceObj["reference"].'";'."\n");
+					fwrite($handle, '        sha256 = "'.substr($hash, 0, -1).'";'."\n");
+					fwrite($handle, "      };\n");
 					break;
 
 				default:
 					throw new Exception("Cannot convert dependency of type: ".$sourceObj["type"]);
 			}
+
+			fwrite($handle, "    };\n");
 		}
 
 		fwrite($handle, "  };\n");
