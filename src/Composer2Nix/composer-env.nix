@@ -57,19 +57,24 @@ rec {
         text = ''
           #! ${php}/bin/php
           <?php
-          $composerLockStr = file_get_contents($argv[1]);
-
-          if($composerLockStr === false)
+          if(file_exists($argv[1]))
           {
-              fwrite(STDERR, "Cannot open composer.lock contents\n");
-              exit(1);
+              $composerLockStr = file_get_contents($argv[1]);
+
+              if($composerLockStr === false)
+              {
+                  fwrite(STDERR, "Cannot open composer.lock contents\n");
+                  exit(1);
+              }
+              else
+              {
+                  $config = json_decode($composerLockStr);
+                  $packagesStr = json_encode($config->packages, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+                  print($packagesStr);
+              }
           }
           else
-          {
-              $config = json_decode($composerLockStr);
-              $packagesStr = json_encode($config->packages, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-              print($packagesStr);
-          }
+              print("[]");
           ?>
         '';
       };
@@ -170,7 +175,7 @@ rec {
 
         ${stdenv.lib.optionalString (removeComposerArtifacts) ''
           # Remove composer stuff
-          rm composer.json composer.lock
+          rm -f composer.json composer.lock
         ''}
     '';
   };

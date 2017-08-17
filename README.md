@@ -1,6 +1,6 @@
 composer2nix
 ============
-`composer2nix` is a tool that can be used to generate [Nix](http://nixos.org)
+`composer2nix` is a tool that can be used to generate [Nix](http://nixos.org/nix)
 expressions for PHP [composer](https://getcomposer.org) packages.
 
 Nix integration makes it possible to use the Nix package manager (as opposed to
@@ -29,10 +29,10 @@ including its dependencies:
 
     $ nix-build
 
-An example use case scenario
-============================
-We can use `composer2nix` to automate the deployment of a web application as
-part of a NixOS configuration.
+Deploying a web application project
+-----------------------------------
+We can use `composer2nix` to automate the deployment of a web application project
+as part of a NixOS configuration.
 
 For example, we can create the following trivial PHP web application
 (`index.php`) that uses the [dompdf](http://dompdf.github.io/) library to
@@ -82,9 +82,11 @@ application and its dependencies.
 We can use Nix to build a bundle of our web application including its
 dependencies:
 
+```bash
 $ nix-build
 $ ls result/
 index.php  vendor/
+```
 
 (As may be observed, the `vendor/` folder contains all dependency artifacts).
 
@@ -115,17 +117,32 @@ in
 
 We can deploy the above NixOS configuration as follows:
 
-    $ nixos-rebuild switch
+```bash
+$ nixos-rebuild switch
+```
 
 If the above command succeeds, we have a running system with the Apache
 webserver serving our web application.
 
+Deploying a command-line utility project
+----------------------------------------
+In addition to web applications, we can also deploy command-line utility
+projects implemented in PHP.
+
+For example, for the `composer2nix` project, we can generate a CLI-specific
+expression by adding the `--executable` parameter:
+
+    $ composer2nix --executable
+
+We can install the `composer2nix` executable in our Nix profile by running:
+
+    $ nix-env -f default.nix -i
+
 Limitations
 ===========
 Currently, the state of this tool is that it is just a proof on concept
-implementation. As a result, it is lacking many features and probably buggy.
-Most importantly, only the `path`, `zip`, `git`, and `hg` dependencies are
-supported.
+implementation. For example, it does not support downloading from `fossil`
+repositories.
 
 License
 =======
