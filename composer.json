@@ -10,7 +10,11 @@
           "homepage": "http://sandervanderburg.nl"
       }
   ],
-  
+
+  "require": {
+      "svanderburg/pndp": "0.0.1"
+  },
+
   "autoload": {
       "psr-4": { "Composer2Nix\\": "src/Composer2Nix" }
   },

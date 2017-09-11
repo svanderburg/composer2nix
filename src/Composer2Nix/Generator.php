@@ -1,23 +1,21 @@
 <?php
 namespace Composer2Nix;
 use Exception;
+use PNDP\NixGenerator;
+use PNDP\AST\NixAttrReference;
+use PNDP\AST\NixAttrSet;
+use PNDP\AST\NixExpression;
+use PNDP\AST\NixFile;
+use PNDP\AST\NixFunction;
+use PNDP\AST\NixFunInvocation;
+use PNDP\AST\NixImport;
+use PNDP\AST\NixInherit;
+use PNDP\AST\NixLet;
+use PNDP\AST\NixNoDefault;
+use PNDP\AST\NixURL;
 
 class Generator
 {
-	private static function composeNixFilePath($path)
-	{
-		// Prefix certain relative paths so that they are of the path type in the Nix expression language
-		if((strlen($path) > 0 && substr($path, 0, 1) === "/") || (strlen($path) > 1 && substr($path, 0, 2) === "./") || (strlen($path) > 2 && substr($path, 0, 3) === "../"))
-			$normalizedPath = $path;
-		else
-			$normalizedPath = "./".$path;
-
-		if(strpos($normalizedPath, ' ') === false)
-			return $normalizedPath; // Path names without spaces don't require any escaping
-		else
-			return '/. + "'.$normalizedPath.'"'; // Compose a path containing spaces
-	}
-
 	private static function selectSourceObject($preferredInstall, $package)
 	{
 		if($preferredInstall === "source")
@@ -40,6 +38,14 @@ class Generator
 		}
 	}
 
+	private static function prefixRelativePath($target)
+	{
+		if(substr($target, 0, 1) == "/" || substr($target, 0, 2) == "./" || substr($target, 0, 3) == "../")
+			return $target;
+		else
+			return "./".$target;
+	}
+
 	private static function generatePackagesExpression($outputFile, $name, $preferredInstall, array $packages, $executable)
 	{
 		$handle = fopen($outputFile, "w");
@@ -47,51 +53,46 @@ class Generator
 		if($handle === false)
 			throw new Exception("Cannot write to: ".$outputFile);
 
-		fwrite($handle, "{composerEnv, fetchurl, fetchgit ? null, fetchhg ? null, fetchsvn ? null}:\n\n");
-		fwrite($handle, "let\n");
-		fwrite($handle, "  dependencies = {\n");
+		$dependencies = array();
 
 		foreach($packages as $package)
 		{
-			fwrite($handle, '    "'.$package["name"].'" = {'."\n");
+			$dependency = array();
 
 			if(array_key_exists("target-dir", $package))
-				$targetDir = $package["target-dir"];
+				$dependency["targetDir"] = $package["target-dir"];
 			else
-				$targetDir = "";
-
-			fwrite($handle, '      targetDir = "'.$targetDir.'";'."\n");
+				$dependency["targetDir"] = "";
 
 			$sourceObj = Generator::selectSourceObject($preferredInstall, $package);
 
 			switch($sourceObj["type"])
 			{
 				case "path":
-					fwrite($handle, '      src = '.Generator::composeNixFilePath($sourceObj['url']).";\n");
+					$dependency["src"] = new NixFile($sourceObj['url']);
 					break;
 
 				case "zip":
-					fwrite($handle, "      src = composerEnv.buildZipPackage {\n");
-
 					if($sourceObj["reference"] == "")
 						$reference = "";
 					else
 						$reference = "-".$sourceObj["reference"];
 
-					fwrite($handle, '        name = "'.strtr($package["name"], "/", "-").$reference.'";'."\n");
-
 					if(substr($sourceObj["url"], 0, 7) === "http://" || substr($sourceObj["url"], 0, 8) === "https://")
 					{
 						$hash = shell_exec('nix-prefetch-url "'.$sourceObj['url'].'"');
-						fwrite($handle, "        src = fetchurl {\n");
-						fwrite($handle, '          url = "'.$sourceObj["url"].'";'."\n");
-						fwrite($handle, '          sha256 = "'.substr($hash, 0, -1).'";'."\n");
-						fwrite($handle, "        };\n");
+						$src = new NixFunInvocation(new NixFile("fetchurl"), array(
+							"url" => new NixURL($sourceObj["url"]),
+							"sha256" => substr($hash, 0, -1)
+						));
 					}
 					else
-						fwrite($handle, "        src = ".Generator::composeNixFilePath($sourceObj['url']).";\n");
+						$src = new NixFile($sourceObj['url']);
 
-					fwrite($handle, "    };\n");
+					$dependency["src"] = new NixFunInvocation(new NixExpression("composerEnv.buildZipPackage", array(
+						"name" => strtr($package["name"], "/", "-").$reference,
+						"src" => $src
+					)));
 					break;
 
 				case "git":
@@ -100,52 +101,58 @@ class Generator
 					$output = json_decode($outputStr, true);
 					$hash = $output["sha256"];
 
-					fwrite($handle, "      src = fetchgit {\n");
-					fwrite($handle, '        name = "'.strtr($package["name"], "/", "-").'-'.$sourceObj["reference"].'";'."\n");
-					fwrite($handle, '        url = "'.$sourceObj["url"].'";'."\n");
-					fwrite($handle, '        rev = "'.$sourceObj["reference"].'";'."\n");
-					fwrite($handle, '        sha256 = "'.$hash.'";'."\n");
-					fwrite($handle, "      };\n");
+					$dependency["src"] = new NixFunInvocation(new NixExpression("fetchgit"), array(
+						"name" => strtr($package["name"], "/", "-").'-'.$sourceObj["reference"],
+						"url" => $sourceObj["url"],
+						"rev" => $sourceObj["reference"],
+						"sha256" => $hash
+					));
 					break;
 
 				case "hg":
 					$hash = shell_exec('nix-prefetch-hg "'.$sourceObj['url'].'" '.$sourceObj["reference"]);
-
-					fwrite($handle, "      src = fetchhg {\n");
-					fwrite($handle, '        name = "'.strtr($package["name"], "/", "-").'-'.$sourceObj["reference"].'";'."\n");
-					fwrite($handle, '        url = "'.$sourceObj["url"].'";'."\n");
-					fwrite($handle, '        rev = "'.$sourceObj["reference"].'";'."\n");
-					fwrite($handle, '        sha256 = "'.substr($hash, 0, -1).'";'."\n");
-					fwrite($handle, "      };\n");
+					$dependency["src"] = new NixFunInvocation(new NixExpression("fetchhg"), array(
+						"name" => strtr($package["name"], "/", "-").'-'.$sourceObj["reference"],
+						"url" => $sourceObj["url"],
+						"rev" => $sourceObj["reference"],
+						"sha256" => $hash
+					));
 					break;
 
 				case "svn":
 					$hash = shell_exec('nix-prefetch-svn "'.$sourceObj['url'].'" '.$sourceObj["reference"]);
-
-					fwrite($handle, "      src = fetchsvn {\n");
-					fwrite($handle, '        name = "'.strtr($package["name"], "/", "-").'-'.$sourceObj["reference"].'";'."\n");
-					fwrite($handle, '        url = "'.$sourceObj["url"].'";'."\n");
-					fwrite($handle, '        rev = "'.$sourceObj["reference"].'";'."\n");
-					fwrite($handle, '        sha256 = "'.substr($hash, 0, -1).'";'."\n");
-					fwrite($handle, "      };\n");
+					$dependency["src"] = new NixFunInvocation(new NixExpression("fetchsvn"), array(
+						"name" => strtr($package["name"], "/", "-").'-'.$sourceObj["reference"],
+						"url" => $sourceObj["url"],
+						"rev" => $sourceObj["reference"],
+						"sha256" => $hash
+					));
 					break;
 
 				default:
 					throw new Exception("Cannot convert dependency of type: ".$sourceObj["type"]);
 			}
 
-			fwrite($handle, "    };\n");
+			$dependencies[$package["name"]] = $dependency;
 		}
 
-		fwrite($handle, "  };\n");
-		fwrite($handle, "in\n");
-		fwrite($handle, "composerEnv.buildPackage {\n");
-		fwrite($handle, '  name = "'.$name.'";'."\n");
-		fwrite($handle, "  src = ./.;\n");
-		fwrite($handle, "  executable = ".($executable ? "true" : "false").";\n");
-		fwrite($handle, "  inherit dependencies;\n");
-		fwrite($handle, "}\n");
+		$expr = new NixFunction(array(
+			"composerEnv" => new NixNoDefault(),
+			"fetchurl" => new NixNoDefault(),
+			"fetchgit" => null,
+			"fetchhg" => null,
+			"fetchsvn" => null
+		), new NixLet(array(
+			"dependencies" => new NixAttrSet($dependencies)
+		), new NixFunInvocation(new NixExpression("composerEnv.buildPackage"), array(
+			"name" => $name,
+			"src" => new NixFile("./."),
+			"executable" => $executable,
+			"dependencies" => new NixInherit()
+		))));
 
+		$exprStr = NixGenerator::phpToNix($expr, true);
+		fwrite($handle, $exprStr);
 		fclose($handle);
 	}
 
@@ -156,20 +163,29 @@ class Generator
 		if($handle === false)
 			throw new Exception("Cannot write to: ".$compositionFile);
 
-		fwrite($handle, "{ pkgs ? import <nixpkgs> { inherit system; }\n");
-		fwrite($handle, ", system ? builtins.currentSystem\n");
-		fwrite($handle, "}:\n\n");
+		$expr = new NixFunction(array(
+			"pkgs" => new NixFunInvocation(new NixImport(new NixExpression("<nixpkgs>")), array(
+				"system" => new NixInherit()
+			)),
+			"system" => new NixAttrReference(new NixExpression("builtins"), new NixExpression("currentSystem"))
+		), new NixLet(array(
+			"composerEnv" => new NixFunInvocation(new NixImport(new NixFile(Generator::prefixRelativePath($composerEnvFile))), array(
+				"stdenv" => new NixInherit("pkgs"),
+				"writeTextFile" => new NixInherit("pkgs"),
+				"fetchurl" => new NixInherit("pkgs"),
+				"php" => new NixInherit("pkgs"),
+				"unzip" => new NixInherit("pkgs")
+			))
+		), new NixFunInvocation(new NixImport(new NixFile(Generator::prefixRelativePath($outputFile))), array(
+			"composerEnv" => new NixInherit(),
+			"fetchurl" => new NixInherit("pkgs"),
+			"fetchgit" => new NixInherit("pkgs"),
+			"fetchhg" => new NixInherit("pkgs"),
+			"fetchsvn" => new NixInherit("pkgs")
+		))));
 
-		fwrite($handle, "let\n");
-		fwrite($handle, "  composerEnv = import ".Generator::composeNixFilePath($composerEnvFile)." {\n");
-		fwrite($handle, "    inherit (pkgs) stdenv writeTextFile fetchurl php unzip;\n");
-		fwrite($handle, "  };\n");
-		fwrite($handle, "in\n");
-		fwrite($handle, "import ".Generator::composeNixFilePath($outputFile)." {\n");
-		fwrite($handle, "  inherit composerEnv;\n");
-		fwrite($handle, "  inherit (pkgs) fetchurl fetchgit fetchhg fetchsvn;\n");
-		fwrite($handle, "}\n");
-
+		$exprStr = NixGenerator::phpToNix($expr, true);
+		fwrite($handle, $exprStr);
 		fclose($handle);
 	}
 
