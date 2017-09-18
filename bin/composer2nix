@@ -2,6 +2,7 @@
 <?php
 require_once(dirname(__FILE__)."/../vendor/autoload.php");
 
+use Composer2Nix\Composer;
 use Composer2Nix\Generator;
 
 function displayHelp($command)
@@ -17,6 +18,9 @@ Options:
                          composer.json)
      --lock-file=FILE    Path to the composer.lock file (defaults to:
                          composer.lock)
+ -p, --package           Package to deploy as a command-line utility
+     --package-version   Preferred version of the package to deploy (defaults
+                         to the latest version)
      --output=FILE       Path to the Nix expression containing the generated
                          packages (defaults to: php-packages.nix)
      --composition=FILE  Path to the Nix expression that composes the package
@@ -33,6 +37,10 @@ Options:
      --no-copy-composer-env
                          Do not create a copy of the Nix expression that builds
                          composer packages
+     --symlink-deps      Symlink the dependencies as opposed to copying them.
+                         This is more space efficient, but not all packages may
+                         be able to load their dependencies if they depend on
+                         symlink resolving (defaults to: false).
  -h, --help              Shows the usage of this command
  -v, --version           Shows the version of this command
 
@@ -46,9 +54,11 @@ function displayVersion($command)
 
 /* Parse command line options */
 
-$options = getopt("hv", array(
+$options = getopt("p:hv", array(
 	"config-file:",
 	"lock-file:",
+	"package:",
+	"package-version:",
 	"output:",
 	"composition:",
 	"composer-env:",
@@ -58,6 +68,7 @@ $options = getopt("hv", array(
 	"name:",
 	"executable",
 	"no-copy-composer-env",
+	"symlink-deps",
 	"help",
 	"version"
 ));
@@ -108,6 +119,18 @@ if(array_key_exists("composer-env", $options))
 else
 	$composerEnvFile = "composer-env.nix";
 
+if(array_key_exists("p", $options))
+	$package = $options["p"];
+else if(array_key_exists("package", $options))
+	$package = $options["package"];
+else
+	$package = null;
+
+if(array_key_exists("package-version", $options))
+	$versionSpec = $options["package-version"];
+else
+	$versionSpec = null;
+
 $noCopyComposerEnv = array_key_exists("no-copy-composer-env", $options);
 
 $preferredInstall = "dist"; // TODO: consult composer.json's preferred-install property. defaults to: auto
@@ -125,13 +148,21 @@ if(array_key_exists("name", $options))
 else
 	$name = null;
 
+$symlinkDependencies = array_key_exists("symlink-deps", $options);
+
 $executable = array_key_exists("executable", $options);
 
 /* Execute the generator */
 
 try
 {
-	Generator::generateNixExpressions($name, $executable, $preferredInstall, $noDev, $configFile, $lockFile, $outputFile, $compositionFile, $composerEnvFile, $noCopyComposerEnv);
+	if($package === null)
+		Generator::generateNixExpressions($name, $executable, $preferredInstall, $noDev, $configFile, $lockFile, $outputFile, $compositionFile, $composerEnvFile, $noCopyComposerEnv, $symlinkDependencies);
+	else
+	{
+		Composer::composePackageFromDependency($package, $versionSpec, $preferredInstall, $noDev);
+		Generator::generateNixExpressions($package, true, $preferredInstall, $noDev, "composer.json", "composer.lock", $outputFile, $compositionFile, $composerEnvFile, $noCopyComposerEnv, $symlinkDependencies);
+	}
 }
 catch(Exception $ex)
 {

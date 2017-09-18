@@ -10,10 +10,19 @@ In addition, generated Nix composer packages
 support convenient integration of PHP applications with NixOS services, such as
 NixOS' Apache HTTP service.
 
+Prerequisites
+=============
+This package requires the following packages to be installed:
+
+* [Nix package manager](http://nixos.org/nix)
+* The Nix prefetch scripts, e.g: `nix-env -f '<nixpkgs>' -iA nix-prefetch-scripts`
+
+Consult the Nix documentation for the installation instructions.
+
 Usage
 =====
-You need a project providing both a `composer.json` and a `composer.lock`
-configuration file.
+You need a project providing a `composer.json` and (if applicable) a
+`composer.lock` configuration file.
 
 Running the following command generates Nix expressions from the composer
 configuration files:
@@ -117,9 +126,7 @@ in
 
 We can deploy the above NixOS configuration as follows:
 
-```bash
-$ nixos-rebuild switch
-```
+    $ nixos-rebuild switch
 
 If the above command succeeds, we have a running system with the Apache
 webserver serving our web application.
@@ -137,6 +144,51 @@ expression by adding the `--executable` parameter:
 We can install the `composer2nix` executable in our Nix profile by running:
 
     $ nix-env -f default.nix -i
+
+Deploying third-party end user packages
+---------------------------------------
+Aside from deploying development projects, we may also want to deploy third
+party end-user packages, typically command-line tools.
+
+We can use `composer2nix` to automatically generate expressions from a third
+party package that comes from Packagist, such as `phpunit`:
+
+    $ composer2nix -p phpunit/phpunit
+
+After generating the expressions, we can deploy `phpunit` in our Nix profile,
+by running:
+
+    $ nix-env -f default.nix -iA phpunit-phpunit
+
+And after installing the package with Nix, we should be able to run:
+
+    $ phpunit --version
+
+By default, `composer2nix` attempts to download the latest version of a package.
+We can also add a parameter that specifies the version we want to use:
+
+    $ composer2nix -p phpunit/phpunit --package-version 6.2.0
+
+The above command-line instruction deploys `phpunit` version `6.2.0`.
+
+The `--package-version` parameter supports any version specifier supported by
+`composer`, including version ranges.
+
+Advanced features
+=================
+`composer2nix` supports a number of less commonly used advanced features.
+
+Symlinking dependencies
+-----------------------
+By default, `composer2nix` makes copies of all packages that end up in the
+`vendor/` folder. This is the default option, because some packages load the
+`autoload.php` relative from its resolved location, such as `phpunit` and may
+not work properly if a dependency is a symlink.
+
+It is also possible to symlink all dependencies as opposed to copying them which
+makes deployments faster and more space efficient:
+
+    $ composer2nix --symlink-dependencies
 
 Limitations
 ===========

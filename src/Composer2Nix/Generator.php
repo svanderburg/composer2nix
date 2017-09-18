@@ -46,7 +46,7 @@ class Generator
 			return "./".$target;
 	}
 
-	private static function generatePackagesExpression($outputFile, $name, $preferredInstall, array $packages, $executable)
+	private static function generatePackagesExpression($outputFile, $name, $preferredInstall, array $packages, $executable, $symlinkDependencies)
 	{
 		$handle = fopen($outputFile, "w");
 
@@ -89,10 +89,10 @@ class Generator
 					else
 						$src = new NixFile($sourceObj['url']);
 
-					$dependency["src"] = new NixFunInvocation(new NixExpression("composerEnv.buildZipPackage", array(
+					$dependency["src"] = new NixFunInvocation(new NixExpression("composerEnv.buildZipPackage"), array(
 						"name" => strtr($package["name"], "/", "-").$reference,
 						"src" => $src
-					)));
+					));
 					break;
 
 				case "git":
@@ -148,7 +148,8 @@ class Generator
 			"name" => $name,
 			"src" => new NixFile("./."),
 			"executable" => $executable,
-			"dependencies" => new NixInherit()
+			"dependencies" => new NixInherit(),
+			"symlinkDependencies" => $symlinkDependencies
 		))));
 
 		$exprStr = NixGenerator::phpToNix($expr, true);
@@ -189,7 +190,7 @@ class Generator
 		fclose($handle);
 	}
 
-	public static function generateNixExpressions($name, $executable, $preferredInstall, $noDev, $configFile, $lockFile, $outputFile, $compositionFile, $composerEnvFile, $noCopyComposerEnv)
+	public static function generateNixExpressions($name, $executable, $preferredInstall, $noDev, $configFile, $lockFile, $outputFile, $compositionFile, $composerEnvFile, $noCopyComposerEnv, $symlinkDependencies)
 	{
 		/* Open the composer.json file and decode it */
 		$composerJSONStr = file_get_contents($configFile);
@@ -239,7 +240,7 @@ class Generator
 			$packages = array();
 
 		/* Generate packages expression */
-		Generator::generatePackagesExpression($outputFile, $name, $preferredInstall, $packages, $executable);
+		Generator::generatePackagesExpression($outputFile, $name, $preferredInstall, $packages, $executable, $symlinkDependencies);
 
 		/* Generate composition expression */
 		Generator::generateCompositionExpression($compositionFile, $outputFile, $composerEnvFile);

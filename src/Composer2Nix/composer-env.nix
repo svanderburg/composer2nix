@@ -10,10 +10,10 @@ rec {
       sha256 = "1x467ngxb976ba2r9kqba7jpvm95a0db8nwaa2z14zs7xv1la6bb";
     };
     buildInputs = [ php ];
-    
+
     # We must wrap the composer.phar because of the impure shebang.
     # We cannot use patchShebangs because the executable verifies its own integrity and will detect that somebody has tampered with it.
-    
+
     buildCommand = ''
       # Copy phar file
       mkdir -p $out/share/php
@@ -49,7 +49,7 @@ rec {
       '';
     };
 
-  buildPackage = { name, src, dependencies ? [], executable ? false, removeComposerArtifacts ? false }:
+  buildPackage = { name, src, dependencies ? [], symlinkDependencies ? false, executable ? false, removeComposerArtifacts ? false }:
     let
       reconstructInstalled = writeTextFile {
         name = "reconstructinstalled.php";
@@ -150,11 +150,19 @@ rec {
             ${if dependency.targetDir == "" then ''
               vendorDir="$(dirname ${dependencyName})"
               mkdir -p "$vendorDir"
-              ln -s "${dependency.src}" "$vendorDir/$(basename "${dependencyName}")"
+              ${if symlinkDependencies then
+                ''ln -s "${dependency.src}" "$vendorDir/$(basename "${dependencyName}")"''
+                else
+                ''cp -av "${dependency.src}" "$vendorDir/$(basename "${dependencyName}")"''
+              }
             '' else ''
               namespaceDir="${dependencyName}/$(dirname "${dependency.targetDir}")"
               mkdir -p "$namespaceDir"
-              ln -s "${dependency.src}" "$namespaceDir/$(basename "${dependency.targetDir}")"
+              ${if symlinkDependencies then
+                ''ln -s "${dependency.src}" "$namespaceDir/$(basename "${dependency.targetDir}")"''
+              else
+                ''cp -av "${dependency.src}" "$namespaceDir/$(basename "${dependency.targetDir}")"''
+              }
             ''}
           '') (builtins.attrNames dependencies)}
         cd ..
