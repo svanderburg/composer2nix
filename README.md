@@ -15,7 +15,9 @@ Prerequisites
 This package requires the following packages to be installed:
 
 * [Nix package manager](http://nixos.org/nix)
-* The Nix prefetch scripts, e.g: `nix-env -f '<nixpkgs>' -iA nix-prefetch-scripts`
+* The Nix prefetch scripts. They can be installed from Nix packages by running:
+
+    $ nix-env -f '<nixpkgs>' -iA nix-prefetch-scripts
 
 Consult the Nix documentation for the installation instructions.
 
@@ -177,6 +179,73 @@ The `--package-version` parameter supports any version specifier supported by
 Advanced features
 =================
 `composer2nix` supports a number of less commonly used advanced features.
+
+Running post installation instructions
+--------------------------------------
+For some packages, we may want to run additional command line instructions after
+the packaging process completes, such as running unit tests.
+
+By creating an override Nix expression (e.g. `override.nix`) that invokes the
+generated build function and providing a `postInstall` hook, we can specify
+additional command-line instructions to run:
+
+```nix
+{pkgs ? import <nixpkgs> {
+  inherit system;
+}, system ? builtins.currentSystem}:
+
+let
+  phpPackage = import ./default.nix {
+    inherit pkgs system;
+  };
+in
+phpPackage.override {
+  postInstall = ''
+    php vendor/bin/phpunit tests
+  '';
+}
+```
+
+In the above code fragment, we invoke `phpunit` to run all our unit tests.
+
+We can deploy the above package (and run the corresponding tests) with the
+following command-line instruction:
+
+    $ nix-build override.nix
+
+Adding unspecified dependencies
+-------------------------------
+Some packages may also require non-PHP package dependencies. Since these
+dependencies are not specified in a composer configuration file, their
+deployments may typically fail in a Nix builder environment, because they cannot
+be implicitly found.
+
+By overriding the generated package expression, we can supply these missing
+dependencies ourselves:
+
+```nix
+{pkgs ? import <nixpkgs> {
+  inherit system;
+}, system ? builtins.currentSystem}:
+
+let
+  phpPackage = import ./default.nix {
+    inherit pkgs system;
+  };
+in
+phpPackage.override (oldAttrs: {
+  buildInputs = oldAttrs.buildInputs ++ [ pkgs.graphviz ];
+  postInstall = ''
+    php vendor/bin/phpdocumentor -d src -t out
+  '';
+})
+```
+
+The above expression overrides the generated PHP package by supplying `graphviz`
+as an extra dependency. This package is particularly useful when it is desired
+to use `phpdocumentor` -- it uses `graphviz` to generate class diagrams. If this
+tool is not present in the build environment, class diagrams will not be
+generated.
 
 Symlinking dependencies
 -----------------------

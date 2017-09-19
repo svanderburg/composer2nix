@@ -4,10 +4,10 @@
 
 rec {
   composer = stdenv.mkDerivation {
-    name = "composer-1.4.2";
+    name = "composer-1.5.2";
     src = fetchurl {
-      url = https://github.com/composer/composer/releases/download/1.4.2/composer.phar;
-      sha256 = "1x467ngxb976ba2r9kqba7jpvm95a0db8nwaa2z14zs7xv1la6bb";
+      url = https://github.com/composer/composer/releases/download/1.5.2/composer.phar;
+      sha256 = "07xkpg9y1dd4s33y3cbf7r5fphpgc39mpm066a8m9y4ffsf539f0";
     };
     buildInputs = [ php ];
 
@@ -49,7 +49,7 @@ rec {
       '';
     };
 
-  buildPackage = { name, src, dependencies ? [], symlinkDependencies ? false, executable ? false, removeComposerArtifacts ? false }:
+  buildPackage = { name, src, dependencies ? [], symlinkDependencies ? false, executable ? false, removeComposerArtifacts ? false, postInstall ? ""}@args:
     let
       reconstructInstalled = writeTextFile {
         name = "reconstructinstalled.php";
@@ -68,8 +68,17 @@ rec {
               }
               else
               {
-                  $config = json_decode($composerLockStr);
-                  $packagesStr = json_encode($config->packages, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+                  $config = json_decode($composerLockStr, true);
+
+                  if(array_key_exists("packages", $config))
+                      $allPackages = $config["packages"];
+                  else
+                      $allPackages = array();
+
+                  if(array_key_exists("packages-dev", $config))
+                      $allPackages = array_merge($allPackages, $config["packages-dev"]);
+
+                  $packagesStr = json_encode($allPackages, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
                   print($packagesStr);
               }
           }
@@ -113,9 +122,8 @@ rec {
         '';
       };
     in
-    stdenv.mkDerivation {
-      inherit name src;
-      buildInputs = [ php composer ];
+    stdenv.lib.makeOverridable stdenv.mkDerivation (builtins.removeAttrs args [ "dependencies" ] // {
+      buildInputs = [ php composer ] ++ args.buildInputs or [];
       buildCommand = ''
         ${if executable then ''
           mkdir -p $out/share/php
@@ -140,7 +148,7 @@ rec {
         mkdir -p vendor/composer
         ${reconstructInstalled} composer.lock > vendor/composer/installed.json
 
-        # Symlink the provided dependencies
+        # Copy or symlink the provided dependencies
         cd vendor
         ${stdenv.lib.concatMapStrings (dependencyName:
           let
@@ -185,6 +193,9 @@ rec {
           # Remove composer stuff
           rm -f composer.json composer.lock
         ''}
+
+        # Execute post install hook
+        runHook postInstall
     '';
-  };
+  });
 }
