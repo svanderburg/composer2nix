@@ -8,17 +8,17 @@
     "packages": [
         {
             "name": "svanderburg/pndp",
-            "version": "0.0.1",
+            "version": "v0.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/svanderburg/pndp.git",
                 "reference": "99b0904e0f2efb35b8f012892912e0d171e9c2da"
             },
             "dist": {
-                "type": "path",
+                "type": "zip",
                 "url": "https://api.github.com/repos/svanderburg/pndp/zipball/99b0904e0f2efb35b8f012892912e0d171e9c2da",
                 "reference": "99b0904e0f2efb35b8f012892912e0d171e9c2da",
-                "shasum": null
+                "shasum": ""
             },
             "bin": [
                 "bin/pndp-build"
@@ -29,11 +29,7 @@
                     "PNDP\\": "src/PNDP"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "Pkgs\\": "tests/Pkgs"
-                }
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -44,7 +40,8 @@
                     "homepage": "http://sandervanderburg.nl"
                 }
             ],
-            "description": "PNDP: An internal DSL for Nix in PHP"
+            "description": "PNDP: An internal DSL for Nix in PHP",
+            "time": "2017-09-11T21:11:09+00:00"
         }
     ],
     "packages-dev": [],

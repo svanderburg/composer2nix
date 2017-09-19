@@ -17,9 +17,11 @@ This package requires the following packages to be installed:
 * [Nix package manager](http://nixos.org/nix)
 * The Nix prefetch scripts. They can be installed from Nix packages by running:
 
-    $ nix-env -f '<nixpkgs>' -iA nix-prefetch-scripts
+```bash
+$ nix-env -f '<nixpkgs>' -iA nix-prefetch-scripts
+```
 
-Consult the Nix documentation for the installation instructions.
+Consult the Nix documentation for detailed installation instructions.
 
 Usage
 =====
