@@ -49,7 +49,7 @@ rec {
       '';
     };
 
-  buildPackage = { name, src, dependencies ? [], symlinkDependencies ? false, executable ? false, removeComposerArtifacts ? false, postInstall ? ""}@args:
+  buildPackage = { name, src, dependencies ? [], symlinkDependencies ? false, executable ? false, removeComposerArtifacts ? false, postInstall ? "", ...}@args:
     let
       reconstructInstalled = writeTextFile {
         name = "reconstructinstalled.php";
@@ -113,7 +113,7 @@ rec {
               if(array_key_exists("bin", $config))
               {
                   mkdir("vendor/".$binDir);
-                  
+
                   foreach($config["bin"] as $bin)
                       symlink("../../".$bin, "vendor/".$binDir."/".basename($bin));
               }
@@ -186,7 +186,30 @@ rec {
         ${stdenv.lib.optionalString executable ''
           ${constructBin} composer.json
           ln -s $(pwd)/vendor/bin $out/bin
-          patchShebangs $out/bin
+        ''}
+
+        ${stdenv.lib.optionalString (!symlinkDependencies) ''
+          # Patch the shebangs if possible
+          if [ -d $out/bin ]
+          then
+              # Look for all executables in bin/
+              for i in $out/bin/*
+              do
+                  # Look for their location
+                  realFile=$(readlink -f "$i")
+
+                  # Restore write permissions
+                  chmod u+wx "$(dirname "$realFile")"
+                  chmod u+w "$realFile"
+
+                  # Patch shebang
+                  sed -e "s|#!/usr/bin/php|#!${php}/bin/php|" \
+                      -e "s|#!/usr/bin/env php|#!${php}/bin/php|" \
+                      "$realFile" > tmp
+                  mv tmp "$realFile"
+                  chmod u+x "$realFile"
+              done
+          fi
         ''}
 
         ${stdenv.lib.optionalString (removeComposerArtifacts) ''

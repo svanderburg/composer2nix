@@ -46,7 +46,7 @@ class Generator
 			return "./".$target;
 	}
 
-	private static function generatePackagesExpression($outputFile, $name, $preferredInstall, array $packages, $executable, $symlinkDependencies)
+	private static function generatePackagesExpression(array $config, $outputFile, $name, $preferredInstall, array $packages, $executable, $symlinkDependencies)
 	{
 		$handle = fopen($outputFile, "w");
 
@@ -136,6 +136,27 @@ class Generator
 			$dependencies[$package["name"]] = $dependency;
 		}
 
+		/* Compose meta properties */
+		$meta = array();
+
+		if(array_key_exists("homepage", $config))
+			$meta["homepage"] = $config["homepage"];
+
+		if(array_key_exists("license", $config))
+		{
+			if(is_string($config["license"]))
+				$meta["license"] = $config["license"];
+			else if(is_array($config["license"]))
+			{
+				if(count($config["license"]) > 0)
+					$meta["license"] = $config["license"][0];
+
+				for($i = 1; $i < count($config["license"]); $i++)
+					$meta["license"] .= ", ".$config["license"][$i];
+			}
+		}
+
+		/* Compose package function invocation */
 		$expr = new NixFunction(array(
 			"composerEnv" => new NixNoDefault(),
 			"fetchurl" => new NixNoDefault(),
@@ -149,7 +170,8 @@ class Generator
 			"src" => new NixFile("./."),
 			"executable" => $executable,
 			"dependencies" => new NixInherit(),
-			"symlinkDependencies" => $symlinkDependencies
+			"symlinkDependencies" => $symlinkDependencies,
+			"meta" => new NixAttrSet($meta)
 		))));
 
 		$exprStr = NixGenerator::phpToNix($expr, true);
@@ -240,7 +262,7 @@ class Generator
 			$packages = array();
 
 		/* Generate packages expression */
-		Generator::generatePackagesExpression($outputFile, $name, $preferredInstall, $packages, $executable, $symlinkDependencies);
+		Generator::generatePackagesExpression($config, $outputFile, $name, $preferredInstall, $packages, $executable, $symlinkDependencies);
 
 		/* Generate composition expression */
 		Generator::generateCompositionExpression($compositionFile, $outputFile, $composerEnvFile);
