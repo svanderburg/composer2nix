@@ -46,13 +46,8 @@ class Generator
 			return "./".$target;
 	}
 
-	private static function generatePackagesExpression(array $config, $outputFile, $name, $preferredInstall, array $packages, $executable, $symlinkDependencies)
+	private static function generatePackagesAttrSet(array $packages, $preferredInstall)
 	{
-		$handle = fopen($outputFile, "w");
-
-		if($handle === false)
-			throw new Exception("Cannot write to: ".$outputFile);
-
 		$dependencies = array();
 
 		foreach($packages as $package)
@@ -136,6 +131,19 @@ class Generator
 			$dependencies[$package["name"]] = $dependency;
 		}
 
+		return new NixAttrSet($dependencies);
+	}
+
+	private static function generatePackagesExpression(array $config, $outputFile, $name, $preferredInstall, array $packages, array $devPackages, $executable, $symlinkDependencies)
+	{
+		$handle = fopen($outputFile, "w");
+
+		if($handle === false)
+			throw new Exception("Cannot write to: ".$outputFile);
+
+		$packagesAttrSet = Generator::generatePackagesAttrSet($packages, $preferredInstall);
+		$devpackagesAttrSet = Generator::generatePackagesAttrSet($devPackages, $preferredInstall);
+
 		/* Compose meta properties */
 		$meta = array();
 
@@ -162,14 +170,18 @@ class Generator
 			"fetchurl" => new NixNoDefault(),
 			"fetchgit" => null,
 			"fetchhg" => null,
-			"fetchsvn" => null
+			"fetchsvn" => null,
+			"noDev" => false
 		), new NixLet(array(
-			"dependencies" => new NixAttrSet($dependencies)
+			"packages" => $packagesAttrSet,
+			"devPackages" => $devpackagesAttrSet
 		), new NixFunInvocation(new NixExpression("composerEnv.buildPackage"), array(
 			"name" => $name,
 			"src" => new NixFile("./."),
 			"executable" => $executable,
-			"dependencies" => new NixInherit(),
+			"packages" => new NixInherit(),
+			"devPackages" => new NixInherit(),
+			"noDev" => new NixInherit(),
 			"symlinkDependencies" => $symlinkDependencies,
 			"meta" => new NixAttrSet($meta)
 		))));
@@ -190,7 +202,8 @@ class Generator
 			"pkgs" => new NixFunInvocation(new NixImport(new NixExpression("<nixpkgs>")), array(
 				"system" => new NixInherit()
 			)),
-			"system" => new NixAttrReference(new NixExpression("builtins"), new NixExpression("currentSystem"))
+			"system" => new NixAttrReference(new NixExpression("builtins"), new NixExpression("currentSystem")),
+			"noDev" => false
 		), new NixLet(array(
 			"composerEnv" => new NixFunInvocation(new NixImport(new NixFile(Generator::prefixRelativePath($composerEnvFile))), array(
 				"stdenv" => new NixInherit("pkgs"),
@@ -201,6 +214,7 @@ class Generator
 			))
 		), new NixFunInvocation(new NixImport(new NixFile(Generator::prefixRelativePath($outputFile))), array(
 			"composerEnv" => new NixInherit(),
+			"noDev" => new NixInherit(),
 			"fetchurl" => new NixInherit("pkgs"),
 			"fetchgit" => new NixInherit("pkgs"),
 			"fetchhg" => new NixInherit("pkgs"),
@@ -253,16 +267,18 @@ class Generator
 				$packages = array();
 
 			if(!$noDev && array_key_exists("packages-dev", $lockConfig))
-			{
-				foreach($lockConfig["packages-dev"] as $identifier => $devPackage)
-					$packages[$identifier] = $devPackage;
-			}
+				$devPackages = $lockConfig["packages-dev"];
+			else
+				$devPackages = array();
 		}
 		else
+		{
 			$packages = array();
+			$devPackages = array();
+		}
 
 		/* Generate packages expression */
-		Generator::generatePackagesExpression($config, $outputFile, $name, $preferredInstall, $packages, $executable, $symlinkDependencies);
+		Generator::generatePackagesExpression($config, $outputFile, $name, $preferredInstall, $packages, $devPackages, $executable, $symlinkDependencies);
 
 		/* Generate composition expression */
 		Generator::generateCompositionExpression($compositionFile, $outputFile, $composerEnvFile);

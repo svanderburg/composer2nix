@@ -7,7 +7,8 @@ use Composer2Nix\Generator;
 
 function displayHelp($command)
 {
-	print("Usage: ".$command." [OPTION]\n\n");
+	print("Usage: ".$command." [OPTION]\n");
+	print(" or: ".$command." -p NAME [OPTION]\n\n");
 	echo <<<EOT
 This executable can be used to generate Nix expressions from a composer.lock
 (and a composer.json) file so that a package and all its dependencies can be
@@ -18,7 +19,7 @@ Options:
                          composer.json)
      --lock-file=FILE    Path to the composer.lock file (defaults to:
                          composer.lock)
- -p, --package           Package to deploy as a command-line utility
+ -p, --package=NAME      Name of a package to deploy as a command-line utility
      --package-version   Preferred version of the package to deploy (defaults
                          to the latest version)
      --output=FILE       Path to the Nix expression containing the generated
@@ -29,7 +30,8 @@ Options:
                          packages (defaults to: composer-env.nix)
      --prefer-source     Forces installation from package sources when possible
      --prefer-dist       Forces installation from package dist
-     --no-dev            Do not install the development packages
+     --no-dev            Do not generate expressions for the development
+                         packages
      --name              Name of the generated package (defaults to the name
                          provided in the composer.json file)
      --executable        Generate a Nix package for an executable as opposed to
@@ -103,7 +105,6 @@ if(array_key_exists("lock-file", $options))
 else
 	$lockFile = "composer.lock";
 
-
 if(array_key_exists("output", $options))
 	$outputFile = $options["output"];
 else
@@ -133,7 +134,7 @@ else
 
 $noCopyComposerEnv = array_key_exists("no-copy-composer-env", $options);
 
-$preferredInstall = "dist"; // TODO: consult composer.json's preferred-install property. defaults to: auto
+$preferredInstall = "dist";
 
 if(array_key_exists("prefer-source", $options))
 	$preferredInstall = "source";

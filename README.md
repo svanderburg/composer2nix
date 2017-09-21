@@ -182,14 +182,43 @@ Advanced features
 =================
 `composer2nix` supports a number of less commonly used advanced features.
 
+Disabling the deployment of development dependencies
+----------------------------------------------------
+By default `composer` (and as a result, also `composer2nix`) will include all
+development dependencies. However, in production environments you typically want
+to exclude them to reduce the amount of disk space consumed and the deployment
+times.
+
+By overriding the expression (e.g. creating a file named: `override.nix`) and
+appending the `noDev = true;` parameter, we can disable development
+dependencies:
+
+```nix
+{pkgs ? import <nixpkgs> {
+  inherit system;
+}, system ? builtins.currentSystem}:
+
+let
+  phpPackage = import ./default.nix {
+    inherit pkgs system;
+    noDev = true; # Disable development dependencies
+  };
+in
+phpPackage
+```
+
+We can deploy the above package with the following command-line instruction:
+
+    $ nix-build override.nix
+
 Running post installation instructions
 --------------------------------------
 For some packages, we may want to run additional command line instructions after
 the packaging process completes, such as running unit tests.
 
-By creating an override Nix expression (e.g. `override.nix`) that invokes the
-generated build function and providing a `postInstall` hook, we can specify
-additional command-line instructions to run:
+By creating an override Nix expression that invokes the generated build function
+and providing a `postInstall` hook, we can specify additional command-line
+instructions to run:
 
 ```nix
 {pkgs ? import <nixpkgs> {
@@ -209,11 +238,6 @@ phpPackage.override {
 ```
 
 In the above code fragment, we invoke `phpunit` to run all our unit tests.
-
-We can deploy the above package (and run the corresponding tests) with the
-following command-line instruction:
-
-    $ nix-build override.nix
 
 Adding unspecified dependencies
 -------------------------------

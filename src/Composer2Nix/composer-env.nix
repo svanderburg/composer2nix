@@ -49,7 +49,7 @@ rec {
       '';
     };
 
-  buildPackage = { name, src, dependencies ? [], symlinkDependencies ? false, executable ? false, removeComposerArtifacts ? false, postInstall ? "", ...}@args:
+  buildPackage = { name, src, packages ? {}, devPackages ? {}, symlinkDependencies ? false, executable ? false, removeComposerArtifacts ? false, postInstall ? "", noDev ? false, ...}@args:
     let
       reconstructInstalled = writeTextFile {
         name = "reconstructinstalled.php";
@@ -75,8 +75,10 @@ rec {
                   else
                       $allPackages = array();
 
-                  if(array_key_exists("packages-dev", $config))
-                      $allPackages = array_merge($allPackages, $config["packages-dev"]);
+                  ${stdenv.lib.optionalString (!noDev) ''
+                    if(array_key_exists("packages-dev", $config))
+                        $allPackages = array_merge($allPackages, $config["packages-dev"]);
+                  ''}
 
                   $packagesStr = json_encode($allPackages, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
                   print($packagesStr);
@@ -121,8 +123,33 @@ rec {
           ?>
         '';
       };
+
+      bundleDependencies = dependencies:
+        stdenv.lib.concatMapStrings (dependencyName:
+          let
+            dependency = dependencies.${dependencyName};
+          in
+          ''
+            ${if dependency.targetDir == "" then ''
+              vendorDir="$(dirname ${dependencyName})"
+              mkdir -p "$vendorDir"
+              ${if symlinkDependencies then
+                ''ln -s "${dependency.src}" "$vendorDir/$(basename "${dependencyName}")"''
+                else
+                ''cp -av "${dependency.src}" "$vendorDir/$(basename "${dependencyName}")"''
+              }
+            '' else ''
+              namespaceDir="${dependencyName}/$(dirname "${dependency.targetDir}")"
+              mkdir -p "$namespaceDir"
+              ${if symlinkDependencies then
+                ''ln -s "${dependency.src}" "$namespaceDir/$(basename "${dependency.targetDir}")"''
+              else
+                ''cp -av "${dependency.src}" "$namespaceDir/$(basename "${dependency.targetDir}")"''
+              }
+            ''}
+          '') (builtins.attrNames dependencies);
     in
-    stdenv.lib.makeOverridable stdenv.mkDerivation (builtins.removeAttrs args [ "dependencies" ] // {
+    stdenv.lib.makeOverridable stdenv.mkDerivation (builtins.removeAttrs args [ "packages" "devPackages" ] // {
       buildInputs = [ php composer ] ++ args.buildInputs or [];
       buildCommand = ''
         ${if executable then ''
@@ -150,38 +177,17 @@ rec {
 
         # Copy or symlink the provided dependencies
         cd vendor
-        ${stdenv.lib.concatMapStrings (dependencyName:
-          let
-            dependency = dependencies.${dependencyName};
-          in
-          ''
-            ${if dependency.targetDir == "" then ''
-              vendorDir="$(dirname ${dependencyName})"
-              mkdir -p "$vendorDir"
-              ${if symlinkDependencies then
-                ''ln -s "${dependency.src}" "$vendorDir/$(basename "${dependencyName}")"''
-                else
-                ''cp -av "${dependency.src}" "$vendorDir/$(basename "${dependencyName}")"''
-              }
-            '' else ''
-              namespaceDir="${dependencyName}/$(dirname "${dependency.targetDir}")"
-              mkdir -p "$namespaceDir"
-              ${if symlinkDependencies then
-                ''ln -s "${dependency.src}" "$namespaceDir/$(basename "${dependency.targetDir}")"''
-              else
-                ''cp -av "${dependency.src}" "$namespaceDir/$(basename "${dependency.targetDir}")"''
-              }
-            ''}
-          '') (builtins.attrNames dependencies)}
+        ${bundleDependencies packages}
+        ${stdenv.lib.optionalString (!noDev) (bundleDependencies devPackages)}
         cd ..
 
         # Reconstruct autoload scripts
         # We use the optimize feature because Nix packages cannot change after they have been built
         # Using the dynamic loader for a Nix package is useless since there is nothing to dynamically reload.
-        composer dump-autoload --optimize
+        composer dump-autoload --optimize ${stdenv.lib.optionalString noDev "--no-dev"}
 
         # Run the install step as a validation to confirm that everything works out as expected
-        composer install --optimize-autoloader
+        composer install --optimize-autoloader ${stdenv.lib.optionalString noDev "--no-dev"}
 
         ${stdenv.lib.optionalString executable ''
           ${constructBin} composer.json
