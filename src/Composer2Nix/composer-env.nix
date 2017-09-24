@@ -150,6 +150,7 @@ rec {
           '') (builtins.attrNames dependencies);
     in
     stdenv.lib.makeOverridable stdenv.mkDerivation (builtins.removeAttrs args [ "packages" "devPackages" ] // {
+      name = "composer-${args.name}";
       buildInputs = [ php composer ] ++ args.buildInputs or [];
       buildCommand = ''
         ${if executable then ''
