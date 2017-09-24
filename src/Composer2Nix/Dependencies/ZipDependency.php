@@ -6,13 +6,25 @@ use PNDP\AST\NixFile;
 use PNDP\AST\NixFunInvocation;
 use PNDP\AST\NixURL;
 
+/**
+ * Represents a Zip package dependency.
+ */
 class ZipDependency extends Dependency
 {
+	/**
+	 * Constructs a new Zip dependency instance.
+	 *
+	 * @param array $package An array of package configuration properties
+	 * @param array $sourceObj An array of download properties
+	 */
 	public function __construct(array $package, array $sourceObj)
 	{
 		parent::__construct($package, $sourceObj);
 	}
 
+	/**
+	 * @see NixAST::toNixAST
+	 */
 	public function toNixAST()
 	{
 		$dependency = parent::toNixAST();
@@ -45,11 +57,6 @@ class ZipDependency extends Dependency
 		));
 
 		return $dependency;
-	}
-
-	public function toNixExpr($indentLevel, $format)
-	{
-		return NixGenerator::phpToIndentedNix($this->toNixAST(), $indentLevel, $format);
 	}
 }
 ?>

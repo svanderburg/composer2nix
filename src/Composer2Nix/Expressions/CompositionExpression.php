@@ -12,14 +12,37 @@ use PNDP\AST\NixLet;
 use PNDP\AST\NixObject;
 use Composer2Nix\NixASTNode;
 
+/**
+ * A representation of a composition expression whose purpose is to compose
+ * a package from its dependencies.
+ */
 class CompositionExpression extends NixASTNode
 {
+	/** Path to the packages Nix expression */
+	public $outputFile;
+
+	/** Path to the composer environment expression containing the build functionality */
+	public $composerEnvFile;
+
+	/**
+	 * Composes a new composition expression object.
+	 *
+	 * @param string $outputFile Path to the packages Nix expression
+	 * @param string $composerEnvFile Path to the composer environment expression containing the build functionality
+	 */
 	public function __construct($outputFile, $composerEnvFile)
 	{
 		$this->outputFile = $outputFile;
 		$this->composerEnvFile = $composerEnvFile;
 	}
 
+	/**
+	 * Prefixes a given target path with ./ if it is relative and has no
+	 * such symbols in the beginning.
+	 *
+	 * @param string $target Target path
+	 * @return string An optionally prefixed target path
+	 */
 	private function prefixRelativePath($target)
 	{
 		if(substr($target, 0, 1) == "/" || substr($target, 0, 2) == "./" || substr($target, 0, 3) == "../")
@@ -28,6 +51,9 @@ class CompositionExpression extends NixASTNode
 			return "./".$target;
 	}
 
+	/**
+	 * @see NixAST::toNixAST
+	 */
 	public function toNixAST()
 	{
 		return new NixFunction(array(

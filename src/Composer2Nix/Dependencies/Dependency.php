@@ -3,12 +3,22 @@ namespace Composer2Nix\Dependencies;
 use Composer2Nix\NixASTNode;
 use Exception;
 
+/**
+ * Represents a dependency of a composer package that can be converted into a
+ * Nix expression that obtains it.
+ */
 abstract class Dependency extends NixASTNode
 {
 	public $package;
 
 	protected $sourceObj;
 
+	/**
+	 * Creates a new dependency instance.
+	 *
+	 * @param array $package An array of package configuration properties
+	 * @param array $sourceObj An array of download properties
+	 */
 	protected function __construct(array $package, array $sourceObj)
 	{
 		$this->package = $package;
@@ -37,6 +47,14 @@ abstract class Dependency extends NixASTNode
 		}
 	}
 
+	/**
+	 * Constructs a new dependency from a package configuration.
+	 *
+	 * @param array $package An array of package configuration properties
+	 * @param string $preferredInstall Preferred installation type (source or dist)
+	 * @return A specific kind of dependency object derived from the dependencies' type
+	 * @throw An exception if the type is unrecognized
+	 */
 	public static function constructDependency(array $package, $preferredInstall)
 	{
 		$sourceObj = Dependency::selectSourceObject($preferredInstall, $package);
@@ -58,6 +76,9 @@ abstract class Dependency extends NixASTNode
 		}
 	}
 
+	/**
+	 * @see NixAST::toNixAST
+	 */
 	public function toNixAST()
 	{
 		$dependency = array();

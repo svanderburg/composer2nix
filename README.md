@@ -287,9 +287,8 @@ makes deployments faster and more space efficient:
 
 Limitations
 ===========
-Currently, the state of this tool is that it is just a proof on concept
-implementation. For example, it does not support downloading from `fossil`
-repositories.
+This tool is still in the prototype stage. As a result, it may have some issues.
+Furthermore, support for fossil repositories is currently completely absent.
 
 License
 =======

@@ -2,16 +2,32 @@
 namespace Composer2Nix;
 use Exception;
 
+/**
+ * A representation of a composer package configuration that is derived from a
+ * composer.json and composer.lock file.
+ */
 class ComposerConfig
 {
+	/** Name of the package or null to derive it from the config file */
 	public $packageName;
 
+	/** An array of packages that should be deployed as dependencies */
 	public $packages;
 
+	/** An array of packages that should be deployed as development dependencies */
 	public $devPackages;
 
+	/** An array of config values derived from the configuration files */
 	public $values;
 
+	/**
+	 * Constructs a new composer configuration object.
+	 *
+	 * @param string $configFile Path to a composer.json configuration file
+	 * @param string $lockFile Path to a composer.lock configuration file
+	 * @param string $packageName Name of the package or null to derive it from the config file
+	 * @param bool $noDev Indicates whether development dependencies should be excluded or not
+	 */
 	public function __construct($configFile, $lockFile, $packageName, $noDev)
 	{
 		/* Open the composer.json file and decode it */

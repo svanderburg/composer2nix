@@ -4,13 +4,25 @@ use PNDP\NixGenerator;
 use PNDP\AST\NixExpression;
 use PNDP\AST\NixFunInvocation;
 
+/**
+ * Represents a Mercurial dependency.
+ */
 class HgDependency extends Dependency
 {
+	/**
+	 * Constructs a new Mercurial dependency instance.
+	 *
+	 * @param array $package An array of package configuration properties
+	 * @param array $sourceObj An array of download properties
+	 */
 	public function __construct(array $package, array $sourceObj)
 	{
 		parent::__construct($package, $sourceObj);
 	}
 
+	/**
+	 * @see NixAST::toNixAST
+	 */
 	public function toNixAST()
 	{
 		$dependency = parent::toNixAST();

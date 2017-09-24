@@ -15,16 +15,32 @@ use PNDP\AST\NixObject;
 use PNDP\AST\NixURL;
 use Composer2Nix\NixASTNode;
 
+/**
+ * A representation of a packages expression specifying all dependencies
+ * involved and where to obtain them.
+ */
 class PackagesExpression extends NixASTNode
 {
+	/** Specifies whether the package to be deployed is an executable project */
 	public $executable;
 
+	/** Specifies whether the dependencies should be symlinked */
 	public $symlinkDependencies;
 
+	/** The composer package configuration */
 	public $config;
 
+	/** Specifies the preferred installation source ('dist' or 'source') */
 	public $preferredInstall;
 
+	/**
+	 * Creates a new packages expression instance.
+	 *
+	 * @param ComposerConfig $config The composer package configuration
+	 * @param bool $executable Specifies whether the package to be deployed is an executable project
+	 * @param bool $symlinkDependencies Specifies whether the dependencies should be symlinked
+	 * @param string $preferredInstall Specifies the preferred installation source ('dist' or 'source')
+	 */
 	public function __construct(ComposerConfig $config, $executable, $symlinkDependencies, $preferredInstall)
 	{
 		$this->executable = $executable;
@@ -84,6 +100,9 @@ class PackagesExpression extends NixASTNode
 		));
 	}
 
+	/**
+	 * @see NixAST::toNixAST
+	 */
 	public function toNixAST()
 	{
 		return new NixFunction(array(
