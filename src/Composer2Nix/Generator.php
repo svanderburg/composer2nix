@@ -31,7 +31,7 @@ class Generator
 	private static function copyComposerEnv($composerEnvFile, $noCopyComposerEnv)
 	{
 		if(!$noCopyComposerEnv && !copy(dirname(__FILE__)."/composer-env.nix", $composerEnvFile))
-			throw new Exception("Cannot copy composer-env.nix to".$composerEnvFile);
+			throw new Exception("Cannot copy composer-env.nix to: ".$composerEnvFile);
 	}
 
 	/**

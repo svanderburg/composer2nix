@@ -211,6 +211,31 @@ We can deploy the above package with the following command-line instruction:
 
     $ nix-build override.nix
 
+Removing composer artifacts
+---------------------------
+By default, when deploying a composer package with Nix it will also include the
+composer configuration files (`composer.json` and `composer.lock`) in the
+package.
+
+However, for production scenarios, such as deploying a web application, you
+typically do not need these files. It is also possible to remove these composer
+configuration files:
+
+```nix
+{pkgs ? import <nixpkgs> {
+  inherit system;
+}, system ? builtins.currentSystem}:
+
+let
+  phpPackage = import ./default.nix {
+    inherit pkgs system;
+  };
+in
+phpPackage.override {
+  removeComposerArtifacts = true; # Remove composer configuration files
+}
+```
+
 Running post installation instructions
 --------------------------------------
 For some packages, we may want to run additional command line instructions after

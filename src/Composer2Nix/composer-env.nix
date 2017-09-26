@@ -172,6 +172,18 @@ rec {
         # Remove the provided vendor folder if it exists
         rm -Rf vendor
 
+        # If there is no composer.lock file, compose a dummy file.
+        # Otherwise, composer attempts to download the package.json file from
+        # the registry which we do not want.
+        if [ ! -f composer.lock ]
+        then
+            cat > composer.lock <<EOF
+        {
+            "packages": []
+        }
+        EOF
+        fi
+
         # Reconstruct the installed.json file from the lock file
         mkdir -p vendor/composer
         ${reconstructInstalled} composer.lock > vendor/composer/installed.json
@@ -191,16 +203,17 @@ rec {
         composer install --optimize-autoloader ${stdenv.lib.optionalString noDev "--no-dev"}
 
         ${stdenv.lib.optionalString executable ''
+          # Reconstruct the bin/ folder if we deploy an executable project
           ${constructBin} composer.json
           ln -s $(pwd)/vendor/bin $out/bin
         ''}
 
         ${stdenv.lib.optionalString (!symlinkDependencies) ''
           # Patch the shebangs if possible
-          if [ -d $out/bin ]
+          if [ -d $(pwd)/vendor/bin ]
           then
               # Look for all executables in bin/
-              for i in $out/bin/*
+              for i in $(pwd)/vendor/bin/*
               do
                   # Look for their location
                   realFile=$(readlink -f "$i")
@@ -219,10 +232,11 @@ rec {
           fi
         ''}
 
-        ${stdenv.lib.optionalString (removeComposerArtifacts) ''
-          # Remove composer stuff
-          rm -f composer.json composer.lock
-        ''}
+        if [ "$removeComposerArtifacts" = "1" ]
+        then
+            # Remove composer stuff
+            rm -f composer.json composer.lock
+        fi
 
         # Execute post install hook
         runHook postInstall
