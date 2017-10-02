@@ -28,13 +28,13 @@ class HgDependency extends Dependency
 		$dependency = parent::toNixAST();
 
 		$hash = shell_exec('nix-prefetch-hg "'.$this->sourceObj['url'].'" '.$this->sourceObj["reference"]);
-		
+
 		if($hash === false)
 			throw new Exception("Error while invoking nix-prefetch-hg");
 		else
 		{
 			$dependency["src"] = new NixFunInvocation(new NixExpression("fetchhg"), array(
-				"name" => strtr($package["name"], "/", "-").'-'.$this->sourceObj["reference"],
+				"name" => strtr($this->package["name"], "/", "-").'-'.$this->sourceObj["reference"],
 				"url" => $this->sourceObj["url"],
 				"rev" => $this->sourceObj["reference"],
 				"sha256" => $hash

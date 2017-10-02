@@ -25,7 +25,7 @@ class PathDependency extends Dependency
 	public function toNixAST()
 	{
 		$dependency = parent::toNixAST();
-		$dependency["src"] = new NixFile($sourceObj['url']);
+		$dependency["src"] = new NixFile($this->sourceObj['url']);
 		return $dependency;
 	}
 }

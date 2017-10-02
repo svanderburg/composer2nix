@@ -27,16 +27,16 @@ class SVNDependency extends Dependency
 	{
 		$dependency = parent::toNixAST();
 
-		$hash = shell_exec('nix-prefetch-svn "'.$sourceObj['url'].'" '.$sourceObj["reference"]);
+		$hash = shell_exec('nix-prefetch-svn "'.$this->sourceObj['url'].'" '.$this->sourceObj["reference"]);
 
 		if($hash === false)
 			throw new Exception("Error while invoking nix-prefetch-svn");
 		else
 		{
 			$dependency["src"] = new NixFunInvocation(new NixExpression("fetchsvn"), array(
-				"name" => strtr($package["name"], "/", "-").'-'.$sourceObj["reference"],
-				"url" => $sourceObj["url"],
-				"rev" => $sourceObj["reference"],
+				"name" => strtr($this->package["name"], "/", "-").'-'.$this->sourceObj["reference"],
+				"url" => $this->sourceObj["url"],
+				"rev" => $this->sourceObj["reference"],
 				"sha256" => $hash
 			));
 		}

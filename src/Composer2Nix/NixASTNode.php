@@ -14,6 +14,8 @@ abstract class NixASTNode extends NixObject
 	/**
 	 * Returns a compound object that will be converted into a Nix
 	 * expression.
+	 *
+	 * @return mixed A composition of objects that can be converted into a Nix expression
 	 */
 	abstract public function toNixAST();
 
