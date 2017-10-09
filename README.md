@@ -115,12 +115,12 @@ let
   };
 in
 {
+  time.timeZone = "UTC";
+
   services.httpd = {
     enable = true;
     adminAddr = "admin@localhost";
-    extraModules = [
-      { name = "php7"; path = "${pkgs.php}/modules/libphp7.so"; }
-    ];
+    enablePHP = true;
     documentRoot = myexampleapp;
   };
 
