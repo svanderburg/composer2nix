@@ -1,5 +1,5 @@
 <?php
-namespace Composer2Nix\Dependencies;
+namespace Composer2Nix\Sources;
 use PNDP\NixGenerator;
 use PNDP\AST\NixExpression;
 use PNDP\AST\NixFunInvocation;
@@ -7,8 +7,10 @@ use PNDP\AST\NixFunInvocation;
 /**
  * Represents a Git dependency.
  */
-class GitDependency extends Dependency
+class GitSource extends Source
 {
+	public $url;
+
 	/**
 	 * Constructs a new Git dependency instance.
 	 *
@@ -21,12 +23,10 @@ class GitDependency extends Dependency
 	}
 
 	/**
-	 * @see NixAST::toNixAST
+	 * @see Source::fetch()
 	 */
-	public function toNixAST()
+	public function fetch()
 	{
-		$dependency = parent::toNixAST();
-
 		$outputStr = shell_exec('nix-prefetch-git "'.$this->sourceObj['url'].'" '.$this->sourceObj["reference"]);
 
 		if($outputStr === false)
@@ -34,17 +34,25 @@ class GitDependency extends Dependency
 		else
 		{
 			$output = json_decode($outputStr, true);
-			$hash = $output["sha256"];
-
-			$dependency["src"] = new NixFunInvocation(new NixExpression("fetchgit"), array(
-				"name" => strtr($this->package["name"], "/", "-").'-'.$this->sourceObj["reference"],
-				"url" => $this->sourceObj["url"],
-				"rev" => $this->sourceObj["reference"],
-				"sha256" => $hash
-			));
+			$this->hash = $output["sha256"];
 		}
+	}
 
-		return $dependency;
+	/**
+	 * @see NixAST::toNixAST()
+	 */
+	public function toNixAST()
+	{
+		$ast = parent::toNixAST();
+
+		$ast["src"] = new NixFunInvocation(new NixExpression("fetchgit"), array(
+			"name" => strtr($this->package["name"], "/", "-").'-'.$this->sourceObj["reference"],
+			"url" => $this->sourceObj["url"],
+			"rev" => $this->sourceObj["reference"],
+			"sha256" => $this->hash
+		));
+
+		return $ast;
 	}
 }
 ?>

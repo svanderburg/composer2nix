@@ -1,5 +1,5 @@
 <?php
-namespace Composer2Nix\Dependencies;
+namespace Composer2Nix\Sources;
 use PNDP\NixGenerator;
 use PNDP\AST\NixExpression;
 use PNDP\AST\NixFile;
@@ -7,10 +7,12 @@ use PNDP\AST\NixFunInvocation;
 use PNDP\AST\NixURL;
 
 /**
- * Represents a Zip package dependency.
+ * Represents a Zip package source.
  */
-class ZipDependency extends Dependency
+class ZipSource extends Source
 {
+	public $hash;
+
 	/**
 	 * Constructs a new Zip dependency instance.
 	 *
@@ -23,12 +25,10 @@ class ZipDependency extends Dependency
 	}
 
 	/**
-	 * @see NixAST::toNixAST
+	 * @see Source::fetch()
 	 */
-	public function toNixAST()
+	public function fetch()
 	{
-		$dependency = parent::toNixAST();
-
 		if($this->sourceObj["reference"] == "")
 			$reference = "";
 		else
@@ -36,27 +36,38 @@ class ZipDependency extends Dependency
 
 		if(substr($this->sourceObj["url"], 0, 7) === "http://" || substr($this->sourceObj["url"], 0, 8) === "https://")
 		{
-			$hash = shell_exec('nix-prefetch-url "'.$this->sourceObj['url'].'"');
+			$this->hash = shell_exec('nix-prefetch-url "'.$this->sourceObj['url'].'"');
 
-			if($hash === null)
+			if($this->hash === false)
 				throw new Exception("Error while invoking nix-prefetch-url");
-			else
-			{
-				$src = new NixFunInvocation(new NixFile("fetchurl"), array(
-					"url" => new NixURL($this->sourceObj["url"]),
-					"sha256" => substr($hash, 0, -1)
-				));
-			}
 		}
 		else
-			$src = new NixFile($this->sourceObj['url']);
+			$this->hash = null;
+	}
 
-		$dependency["src"] = new NixFunInvocation(new NixExpression("composerEnv.buildZipPackage"), array(
+	/**
+	 * @see NixAST::toNixAST()
+	 */
+	public function toNixAST()
+	{
+		$ast = parent::toNixAST();
+
+		if($this->hash === null)
+			$src = new NixFile($this->sourceObj['url']);
+		else
+		{
+			$src = new NixFunInvocation(new NixFile("fetchurl"), array(
+				"url" => new NixURL($this->sourceObj["url"]),
+				"sha256" => substr($this->hash, 0, -1)
+			));
+		}
+
+		$ast["src"] = new NixFunInvocation(new NixExpression("composerEnv.buildZipPackage"), array(
 			"name" => strtr($this->package["name"], "/", "-").$reference,
 			"src" => $src
 		));
 
-		return $dependency;
+		return $ast;
 	}
 }
 ?>

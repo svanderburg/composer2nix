@@ -2,6 +2,7 @@
 namespace Composer2Nix\Expressions;
 use PNDP\NixGenerator;
 use PNDP\AST\NixAttrReference;
+use PNDP\AST\NixASTNode;
 use PNDP\AST\NixExpression;
 use PNDP\AST\NixFunction;
 use PNDP\AST\NixFunInvocation;
@@ -10,7 +11,6 @@ use PNDP\AST\NixImport;
 use PNDP\AST\NixInherit;
 use PNDP\AST\NixLet;
 use PNDP\AST\NixObject;
-use Composer2Nix\NixASTNode;
 
 /**
  * A representation of a composition expression whose purpose is to compose
@@ -52,7 +52,7 @@ class CompositionExpression extends NixASTNode
 	}
 
 	/**
-	 * @see NixAST::toNixAST
+	 * @see NixAST::toNixAST()
 	 */
 	public function toNixAST()
 	{

@@ -1,9 +1,10 @@
 <?php
 namespace Composer2Nix\Expressions;
 use Composer2Nix\ComposerConfig;
-use Composer2Nix\Dependencies\Dependency;
+use Composer2Nix\Sources\Source;
 use PNDP\NixGenerator;
 use PNDP\AST\NixAttrSet;
+use PNDP\AST\NixASTNode;
 use PNDP\AST\NixExpression;
 use PNDP\AST\NixFile;
 use PNDP\AST\NixFunction;
@@ -13,7 +14,6 @@ use PNDP\AST\NixLet;
 use PNDP\AST\NixNoDefault;
 use PNDP\AST\NixObject;
 use PNDP\AST\NixURL;
-use Composer2Nix\NixASTNode;
 
 /**
  * A representation of a packages expression specifying all dependencies
@@ -51,15 +51,16 @@ class PackagesExpression extends NixASTNode
 
 	private function generateDependenciesExpr(array $packages)
 	{
-		$dependencies = array();
+		$sources = array();
 
 		foreach($packages as $package)
 		{
-			$dependency = Dependency::constructDependency($package, $this->preferredInstall);
-			$dependencies[$package["name"]] = $dependency;
+			$source = Source::constructSource($package, $this->preferredInstall);
+			$source->fetch();
+			$sources[$package["name"]] = $source;
 		}
 
-		return new NixAttrSet($dependencies);
+		return new NixAttrSet($sources);
 	}
 
 	private function generatePackageMetaDataExpr()
@@ -101,7 +102,7 @@ class PackagesExpression extends NixASTNode
 	}
 
 	/**
-	 * @see NixAST::toNixAST
+	 * @see NixAST::toNixAST()
 	 */
 	public function toNixAST()
 	{

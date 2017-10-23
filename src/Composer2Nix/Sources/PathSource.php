@@ -1,13 +1,15 @@
 <?php
-namespace Composer2Nix\Dependencies;
+namespace Composer2Nix\Sources;
 use PNDP\NixGenerator;
 use PNDP\AST\NixFile;
 
 /**
- * Represents a dependency to a local filesystem path.
+ * Represents a source referring to a local filesystem path.
  */
-class PathDependency extends Dependency
+class PathSource extends Source
 {
+	public $path;
+
 	/**
 	 * Constructs a new Git dependency instance.
 	 *
@@ -20,13 +22,21 @@ class PathDependency extends Dependency
 	}
 
 	/**
-	 * @see NixAST::toNixAST
+	 * @see Source::fetch()
+	 */
+	public function fetch()
+	{
+		$this->path = $this->sourceObj['url'];
+	}
+
+	/**
+	 * @see NixAST::toNixAST()
 	 */
 	public function toNixAST()
 	{
-		$dependency = parent::toNixAST();
-		$dependency["src"] = new NixFile($this->sourceObj['url']);
-		return $dependency;
+		$ast = parent::toNixAST();
+		$ast["src"] = new NixFile($this->path);
+		return $ast;
 	}
 }
 ?>
