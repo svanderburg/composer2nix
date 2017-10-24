@@ -14,7 +14,8 @@ abstract class Source extends NixASTNode
 	protected $sourceObj;
 
 	/**
-	 * Creates a new source instance.
+	 * Creates a new source instance. This constructor should never be used
+	 * directly. Instead, use Source::constructSource()
 	 *
 	 * @param array $package An array of package configuration properties
 	 * @param array $sourceObj An array of download properties
@@ -82,7 +83,7 @@ abstract class Source extends NixASTNode
 	abstract public function fetch();
 
 	/**
-	 * @see NixAST::toNixAST()
+	 * @see NixASTNode::toNixAST()
 	 */
 	public function toNixAST()
 	{

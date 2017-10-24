@@ -34,7 +34,7 @@ class HgSource extends Source
 	}
 
 	/**
-	 * @see NixAST::toNixAST()
+	 * @see NixASTNode::toNixAST()
 	 */
 	public function toNixAST()
 	{

@@ -20,7 +20,9 @@ class Generator
 
 	private static function generatePackagesExpression($outputFile, ComposerConfig $config, $executable, $symlinkDependencies, $preferredInstall)
 	{
-		Generator::writeExprToFile($outputFile, new PackagesExpression($config, $executable, $symlinkDependencies, $preferredInstall));
+		$expr = new PackagesExpression($config, $executable, $symlinkDependencies, $preferredInstall);
+		$expr->fetchSources();
+		Generator::writeExprToFile($outputFile, $expr);
 	}
 
 	private static function generateCompositionExpression($compositionFile, $outputFile, $composerEnvFile)
@@ -51,8 +53,8 @@ class Generator
 	 */
 	public static function generateNixExpressions($name, $executable, $preferredInstall, $noDev, $configFile, $lockFile, $outputFile, $compositionFile, $composerEnvFile, $noCopyComposerEnv, $symlinkDependencies)
 	{
-		$config = new ComposerConfig($configFile, $lockFile, $name, $noDev);
-		Generator::generatePackagesExpression($outputFile, $config, $executable, $symlinkDependencies, $preferredInstall);
+		$composerConfig = new ComposerConfig($configFile, $lockFile, $name, $noDev);
+		Generator::generatePackagesExpression($outputFile, $composerConfig, $executable, $symlinkDependencies, $preferredInstall);
 		Generator::generateCompositionExpression($compositionFile, $outputFile, $composerEnvFile);
 		Generator::copyComposerEnv($composerEnvFile, $noCopyComposerEnv);
 	}
