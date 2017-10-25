@@ -8,6 +8,7 @@ use PNDP\AST\NixFile;
  */
 class PathSource extends Source
 {
+	/** Path to the file artifact */
 	public $path;
 
 	/**

@@ -9,6 +9,7 @@ use PNDP\AST\NixFunInvocation;
  */
 class HgSource extends Source
 {
+	/** Stores the output hash of the download */
 	public $hash;
 
 	/**

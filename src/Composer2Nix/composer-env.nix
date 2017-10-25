@@ -114,7 +114,8 @@ rec {
 
               if(array_key_exists("bin", $config))
               {
-                  mkdir("vendor/".$binDir);
+                  if(!file_exists("vendor/".$binDir))
+                      mkdir("vendor/".$binDir);
 
                   foreach($config["bin"] as $bin)
                       symlink("../../".$bin, "vendor/".$binDir."/".basename($bin));

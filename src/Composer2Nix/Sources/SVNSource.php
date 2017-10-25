@@ -9,6 +9,9 @@ use PNDP\AST\NixFunInvocation;
  */
 class SVNSource extends Source
 {
+	/** Stores the output hash of the download */
+	public $hash;
+
 	/**
 	 * Constructs a new Subversion dependency instance.
 	 *

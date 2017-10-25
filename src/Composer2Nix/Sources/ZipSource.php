@@ -11,6 +11,10 @@ use PNDP\AST\NixURL;
  */
 class ZipSource extends Source
 {
+	/* Contains a SHA1 reference to the corresponding Git revision */
+	public $reference;
+
+	/** Stores the output hash of the download */
 	public $hash;
 
 	/**
@@ -30,9 +34,9 @@ class ZipSource extends Source
 	public function fetch()
 	{
 		if($this->sourceObj["reference"] == "")
-			$reference = "";
+			$this->reference = "";
 		else
-			$reference = "-".$this->sourceObj["reference"];
+			$this->reference = "-".$this->sourceObj["reference"];
 
 		if(substr($this->sourceObj["url"], 0, 7) === "http://" || substr($this->sourceObj["url"], 0, 8) === "https://")
 		{
@@ -63,7 +67,7 @@ class ZipSource extends Source
 		}
 
 		$ast["src"] = new NixFunInvocation(new NixExpression("composerEnv.buildZipPackage"), array(
-			"name" => strtr($this->package["name"], "/", "-").$reference,
+			"name" => strtr($this->package["name"], "/", "-").$this->reference,
 			"src" => $src
 		));
 

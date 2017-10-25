@@ -9,8 +9,10 @@ use Exception;
  */
 abstract class Source extends NixASTNode
 {
+	/** An array of package configuration properties */
 	public $package;
 
+	/** An array of download properties */
 	protected $sourceObj;
 
 	/**
@@ -53,7 +55,7 @@ abstract class Source extends NixASTNode
 	 *
 	 * @param array $package An array of package configuration properties
 	 * @param string $preferredInstall Preferred installation type (source or dist)
-	 * @return A specific kind of dependency object derived from the source's type
+	 * @return Source A specific kind of dependency object derived from the source's type
 	 * @throw An exception if the type is unrecognized
 	 */
 	public static function constructSource(array $package, $preferredInstall)

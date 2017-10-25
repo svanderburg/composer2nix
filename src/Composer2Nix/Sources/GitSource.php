@@ -9,7 +9,8 @@ use PNDP\AST\NixFunInvocation;
  */
 class GitSource extends Source
 {
-	public $url;
+	/** Stores the output hash of the download */
+	public $hash;
 
 	/**
 	 * Constructs a new Git dependency instance.
