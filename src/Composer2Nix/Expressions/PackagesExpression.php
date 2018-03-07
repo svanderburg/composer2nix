@@ -22,6 +22,9 @@ class PackagesExpression extends NixASTNode
 	/** Contains all properties of the composer package to deploy */
 	public $package;
 
+	/** should only an attrSet expression with packages and devPackages be created? */
+	public $sourcesOnly;
+
 	/**
 	 * Creates a new packages expression instance.
 	 *
@@ -29,10 +32,12 @@ class PackagesExpression extends NixASTNode
 	 * @param bool $executable Specifies whether the package to be deployed is an executable project
 	 * @param bool $symlinkDependencies Specifies whether the dependencies should be symlinked
 	 * @param string $preferredInstall Specifies the preferred installation source ('dist' or 'source')
+	 * @param bool $sourcesOnly Specifies whether the expression should only contain the sources attrSet
 	 */
-	public function __construct(ComposerConfig $composerConfig, $executable, $symlinkDependencies, $preferredInstall)
+	public function __construct(ComposerConfig $composerConfig, $executable, $symlinkDependencies, $preferredInstall, $sourcesOnly)
 	{
 		$this->executable = $executable;
+		$this->sourcesOnly = $sourcesOnly;
 		$this->sourcesCache = new SourcesCache($composerConfig, $preferredInstall);
 		$this->package = new Package($composerConfig, $executable, $symlinkDependencies);
 	}
@@ -57,7 +62,9 @@ class PackagesExpression extends NixASTNode
 			"fetchhg" => null,
 			"fetchsvn" => null,
 			"noDev" => false
-		), new NixLet($this->sourcesCache->toNixAST(), $this->package));
+		), $this->sourcesOnly
+			? $this->sourcesCache->toNixAST()
+			: new NixLet($this->sourcesCache->toNixAST(), $this->package));
 	}
 }
 ?>

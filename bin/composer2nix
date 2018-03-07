@@ -43,6 +43,9 @@ Options:
                          This is more space efficient, but not all packages may
                          be able to load their dependencies if they depend on
                          symlink resolving (defaults to: false).
+     --sources-only
+                         Only generate an expression containing the source
+                         descriptions.
  -h, --help              Shows the usage of this command
  -v, --version           Shows the version of this command
 
@@ -71,6 +74,7 @@ $options = getopt("p:hv", array(
 	"executable",
 	"no-copy-composer-env",
 	"symlink-deps",
+	"sources-only",
 	"help",
 	"version"
 ));
@@ -153,16 +157,18 @@ $symlinkDependencies = array_key_exists("symlink-deps", $options);
 
 $executable = array_key_exists("executable", $options);
 
+$sourcesOnly = array_key_exists("sources-only", $options);
+
 /* Execute the generator */
 
 try
 {
 	if($package === null)
-		Generator::generateNixExpressions($name, $executable, $preferredInstall, $noDev, $configFile, $lockFile, $outputFile, $compositionFile, $composerEnvFile, $noCopyComposerEnv, $symlinkDependencies);
+		Generator::generateNixExpressions($name, $executable, $preferredInstall, $noDev, $configFile, $lockFile, $outputFile, $compositionFile, $composerEnvFile, $noCopyComposerEnv, $symlinkDependencies, $sourcesOnly);
 	else
 	{
 		Composer::composePackageFromDependency($package, $versionSpec, $preferredInstall, $noDev);
-		Generator::generateNixExpressions($package, true, $preferredInstall, $noDev, "composer.json", "composer.lock", $outputFile, $compositionFile, $composerEnvFile, $noCopyComposerEnv, $symlinkDependencies);
+		Generator::generateNixExpressions($package, true, $preferredInstall, $noDev, "composer.json", "composer.lock", $outputFile, $compositionFile, $composerEnvFile, $noCopyComposerEnv, $symlinkDependencies, $sourcesOnly);
 	}
 }
 catch(Exception $ex)
