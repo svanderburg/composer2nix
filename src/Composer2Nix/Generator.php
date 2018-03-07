@@ -18,9 +18,9 @@ class Generator
 		fclose($handle);
 	}
 
-	private static function generatePackagesExpression($outputFile, ComposerConfig $config, $executable, $symlinkDependencies, $preferredInstall)
+	private static function generatePackagesExpression($outputFile, ComposerConfig $config, $executable, $symlinkDependencies, $preferredInstall, $sourcesOnly)
 	{
-		$expr = new PackagesExpression($config, $executable, $symlinkDependencies, $preferredInstall);
+		$expr = new PackagesExpression($config, $executable, $symlinkDependencies, $preferredInstall, $sourcesOnly);
 		$expr->fetchSources();
 		Generator::writeExprToFile($outputFile, $expr);
 	}
@@ -50,11 +50,12 @@ class Generator
 	 * @param string $composerEnvFile Path to the composer build environment Nix expression
 	 * @param bool $noCopyComposerEnv When set to true the composer build environment expression will not be copied
 	 * @param bool $symlinkDependencies Specifies whether the dependencies should be symlinked
+	 * @param bool $sourcesOnly Specifies whether the expression should only contain the sources attrSet
 	 */
-	public static function generateNixExpressions($name, $executable, $preferredInstall, $noDev, $configFile, $lockFile, $outputFile, $compositionFile, $composerEnvFile, $noCopyComposerEnv, $symlinkDependencies)
+	public static function generateNixExpressions($name, $executable, $preferredInstall, $noDev, $configFile, $lockFile, $outputFile, $compositionFile, $composerEnvFile, $noCopyComposerEnv, $symlinkDependencies, $sourcesOnly)
 	{
 		$composerConfig = new ComposerConfig($configFile, $lockFile, $name, $noDev);
-		Generator::generatePackagesExpression($outputFile, $composerConfig, $executable, $symlinkDependencies, $preferredInstall);
+		Generator::generatePackagesExpression($outputFile, $composerConfig, $executable, $symlinkDependencies, $preferredInstall, $sourcesOnly);
 		Generator::generateCompositionExpression($compositionFile, $outputFile, $composerEnvFile);
 		Generator::copyComposerEnv($composerEnvFile, $noCopyComposerEnv);
 	}
