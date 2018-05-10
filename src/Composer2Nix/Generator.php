@@ -27,7 +27,8 @@ class Generator
 
 	private static function generateCompositionExpression($compositionFile, $outputFile, $composerEnvFile)
 	{
-		Generator::writeExprToFile($compositionFile, new CompositionExpression($outputFile, $composerEnvFile));
+		$baseDir = realpath(dirname($compositionFile));
+		Generator::writeExprToFile($compositionFile, new CompositionExpression($baseDir, $outputFile, $composerEnvFile));
 	}
 
 	private static function copyComposerEnv($composerEnvFile, $noCopyComposerEnv)

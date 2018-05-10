@@ -24,16 +24,29 @@ class CompositionExpression extends NixASTNode
 	/** Path to the composer environment expression containing the build functionality */
 	public $composerEnvFile;
 
+	private function relativePath($from, $to, $ps = DIRECTORY_SEPARATOR)
+	{
+		$arFrom = explode($ps, rtrim($from, $ps));
+		$arTo = explode($ps, rtrim($to, $ps));
+
+		while(count($arFrom) && count($arTo) && ($arFrom[0] == $arTo[0]))
+		{
+			array_shift($arFrom);
+			array_shift($arTo);
+		}
+		return str_pad("", count($arFrom) * 3, '..'.$ps).implode($ps, $arTo);
+	}
+
 	/**
 	 * Composes a new composition expression object.
 	 *
 	 * @param string $outputFile Path to the packages Nix expression
 	 * @param string $composerEnvFile Path to the composer environment expression containing the build functionality
 	 */
-	public function __construct($outputFile, $composerEnvFile)
+	public function __construct($baseDir, $outputFile, $composerEnvFile)
 	{
-		$this->outputFile = $outputFile;
-		$this->composerEnvFile = $composerEnvFile;
+		$this->outputFile = CompositionExpression::relativePath($baseDir, realpath($outputFile));
+		$this->composerEnvFile = CompositionExpression::relativePath($baseDir, realpath($composerEnvFile));
 	}
 
 	/**
