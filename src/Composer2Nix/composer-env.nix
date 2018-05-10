@@ -4,9 +4,9 @@
 
 rec {
   composer = stdenv.mkDerivation {
-    name = "composer-1.5.2";
+    name = "composer-1.6.5";
     src = fetchurl {
-      url = https://github.com/composer/composer/releases/download/1.5.2/composer.phar;
+      url = https://github.com/composer/composer/releases/download/1.6.5/composer.phar;
       sha256 = "07xkpg9y1dd4s33y3cbf7r5fphpgc39mpm066a8m9y4ffsf539f0";
     };
     buildInputs = [ php ];
