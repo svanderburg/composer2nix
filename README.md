@@ -23,6 +23,21 @@ $ nix-env -f '<nixpkgs>' -iA nix-prefetch-scripts
 
 Consult the Nix documentation for detailed installation instructions.
 
+Installation
+============
+This package can be installed with both `composer` and the Nix package manager.
+To install it with composer, run:
+
+```bash
+$ composer global require svanderburg/composer2nix
+```
+
+To install this package with Nix, clone the Git repository and run:
+
+```bash
+$ nix-env -f release.nix -iA package.x86_64-linux
+```
+
 Usage
 =====
 You need a project providing a `composer.json` and (if applicable) a
