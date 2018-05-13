@@ -56,8 +56,8 @@ class Generator
 	{
 		$composerConfig = new ComposerConfig($configFile, $lockFile, $name, $noDev);
 		Generator::generatePackagesExpression($outputFile, $composerConfig, $executable, $symlinkDependencies, $preferredInstall);
-		Generator::generateCompositionExpression($compositionFile, $outputFile, $composerEnvFile);
 		Generator::copyComposerEnv($composerEnvFile, $noCopyComposerEnv);
+		Generator::generateCompositionExpression($compositionFile, $outputFile, $composerEnvFile);
 	}
 }
 ?>
