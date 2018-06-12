@@ -37,6 +37,17 @@ class Generator
 			throw new Exception("Cannot copy composer-env.nix to: ".$composerEnvFile);
 	}
 
+	private static function checkVendorFolder($configFile)
+	{
+		if(file_exists(dirname($configFile)."/vendor"))
+		{
+			print("\nWARNING: There is a vendor/ folder in the root directory of the project!\n");
+			print("This folder will be used by the Nix builder and influence the outcome!\n");
+			print("If you don't want this to happen, then you should remove it before running\n");
+			print("any of the Nix commands!\n");
+		}
+	}
+
 	/**
 	 * Generates Nix expressions from a provided composer package configuration.
 	 *
@@ -58,6 +69,7 @@ class Generator
 		Generator::generatePackagesExpression($outputFile, $composerConfig, $executable, $symlinkDependencies, $preferredInstall);
 		Generator::copyComposerEnv($composerEnvFile, $noCopyComposerEnv);
 		Generator::generateCompositionExpression($compositionFile, $outputFile, $composerEnvFile);
+		Generator::checkVendorFolder($configFile);
 	}
 }
 ?>
