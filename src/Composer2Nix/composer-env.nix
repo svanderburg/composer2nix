@@ -49,7 +49,21 @@ rec {
       '';
     };
 
-  buildPackage = { name, src, packages ? {}, devPackages ? {}, symlinkDependencies ? false, executable ? false, removeComposerArtifacts ? false, postInstall ? "", noDev ? false, ...}@args:
+  buildPackage =
+    { name
+    , src
+    , packages ? {}
+    , devPackages ? {}
+    , buildInputs ? []
+    , symlinkDependencies ? false
+    , executable ? false
+    , removeComposerArtifacts ? false
+    , postInstall ? ""
+    , noDev ? false
+    , unpackPhase ? "true"
+    , buildPhase ? "true"
+    , ...}@args:
+
     let
       reconstructInstalled = writeTextFile {
         name = "reconstructinstalled.php";
@@ -149,11 +163,16 @@ rec {
               }
             ''}
           '') (builtins.attrNames dependencies);
+
+      extraArgs = removeAttrs args [ "name" "packages" "devPackages" "buildInputs" ];
     in
-    stdenv.lib.makeOverridable stdenv.mkDerivation (builtins.removeAttrs args [ "packages" "devPackages" ] // {
-      name = "composer-${args.name}";
-      buildInputs = [ php composer ] ++ args.buildInputs or [];
-      buildCommand = ''
+    stdenv.lib.makeOverridable stdenv.mkDerivation ({
+      name = "composer-${name}";
+      buildInputs = [ php composer ] ++ buildInputs;
+
+      inherit unpackPhase buildPhase;
+
+      installPhase = ''
         ${if executable then ''
           mkdir -p $out/share/php
           cp -av $src $out/share/php/$name
@@ -242,5 +261,5 @@ rec {
         # Execute post install hook
         runHook postInstall
     '';
-  });
+  } // extraArgs);
 }
