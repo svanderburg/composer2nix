@@ -2,7 +2,7 @@
 
 { stdenv, writeTextFile, fetchurl, php, unzip }:
 
-rec {
+let
   composer = stdenv.mkDerivation {
     name = "composer-1.6.5";
     src = fetchurl {
@@ -166,7 +166,7 @@ rec {
 
       extraArgs = removeAttrs args [ "name" "packages" "devPackages" "buildInputs" ];
     in
-    stdenv.lib.makeOverridable stdenv.mkDerivation ({
+    stdenv.mkDerivation ({
       name = "composer-${name}";
       buildInputs = [ php composer ] ++ buildInputs;
 
@@ -262,4 +262,9 @@ rec {
         runHook postInstall
     '';
   } // extraArgs);
+in
+{
+  composer = stdenv.lib.makeOverridable composer;
+  buildZipPackage = stdenv.lib.makeOverridable buildZipPackage;
+  buildPackage = stdenv.lib.makeOverridable buildPackage;
 }
