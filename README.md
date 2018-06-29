@@ -299,12 +299,12 @@ let
     inherit pkgs system;
   };
 in
-phpPackage.override (oldAttrs: {
-  buildInputs = oldAttrs.buildInputs ++ [ pkgs.graphviz ];
+phpPackage.override {
+  buildInputs = [ pkgs.graphviz ];
   postInstall = ''
     php vendor/bin/phpdocumentor -d src -t out
   '';
-})
+}
 ```
 
 The above expression overrides the generated PHP package by supplying `graphviz`
