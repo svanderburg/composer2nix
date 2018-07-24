@@ -5,6 +5,7 @@
 let
   composerEnv = import ./src/Composer2Nix/composer-env.nix {
     inherit (pkgs) stdenv writeTextFile fetchurl php unzip;
+    inherit (pkgs.phpPackages) composer;
   };
 in
 import ./php-packages.nix {
