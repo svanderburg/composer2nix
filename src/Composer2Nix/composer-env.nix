@@ -14,7 +14,8 @@ let
     buildInputs = [ php ];
 
     # We must wrap the composer.phar because of the impure shebang.
-    # We cannot use patchShebangs because the executable verifies its own integrity and will detect that somebody has tampered with it.
+    # We cannot use patchShebangs because the executable verifies its own
+    # integrity and will detect that somebody has tampered with it.
 
     buildCommand = ''
       # Copy phar file
@@ -73,36 +74,23 @@ let
         text = ''
           #! ${php}/bin/php
           <?php
-          if(file_exists($argv[1]))
-          {
+          if (file_exists($argv[1])) {
               $composerLockStr = file_get_contents($argv[1]);
-
-              if($composerLockStr === false)
-              {
-                  fwrite(STDERR, "Cannot open composer.lock contents\n");
+              if ($composerLockStr === false) {
+                  fwrite(STDERR, 'Cannot open composer.lock contents'.PHP_EOL);
                   exit(1);
               }
-              else
-              {
-                  $config = json_decode($composerLockStr, true);
-
-                  if(array_key_exists("packages", $config))
-                      $allPackages = $config["packages"];
-                  else
-                      $allPackages = array();
-
-                  ${stdenv.lib.optionalString (!noDev) ''
-                    if(array_key_exists("packages-dev", $config))
-                        $allPackages = array_merge($allPackages, $config["packages-dev"]);
-                  ''}
-
-                  $packagesStr = json_encode($allPackages, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-                  print($packagesStr);
+              $config = json_decode($composerLockStr, true);
+              $allPackages = array_key_exists('packages', $config) ? $config['packages'] : [];
+              ${stdenv.lib.optionalString (!noDev) ''
+              if (array_key_exists('packages-dev', $config)) {
+                  $allPackages = array_merge($allPackages, $config['packages-dev']);
               }
+              ''}
+              echo json_encode($allPackages, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+          } else {
+              echo '[]';
           }
-          else
-              print("[]");
-          ?>
         '';
       };
 
@@ -113,31 +101,20 @@ let
           #! ${php}/bin/php
           <?php
           $composerJSONStr = file_get_contents($argv[1]);
-
-          if($composerJSONStr === false)
-          {
-              fwrite(STDERR, "Cannot open composer.json contents\n");
+          if ($composerJSONStr === false) {
+              fwrite(STDERR, 'Cannot open composer.json contents'.PHP_EOL);
               exit(1);
           }
-          else
-          {
-              $config = json_decode($composerJSONStr, true);
-
-              if(array_key_exists("bin-dir", $config))
-                  $binDir = $config["bin-dir"];
-              else
-                  $binDir = "bin";
-
-              if(array_key_exists("bin", $config))
-              {
-                  if(!file_exists("vendor/".$binDir))
-                      mkdir("vendor/".$binDir);
-
-                  foreach($config["bin"] as $bin)
-                      symlink("../../".$bin, "vendor/".$binDir."/".basename($bin));
+          $config = json_decode($composerJSONStr, true);
+          $binDir = array_key_exists('bin-dir', $config) ? $config['bin-dir'] : 'bin';
+          if (array_key_exists('bin', $config)) {
+              if (!file_exists('vendor/'.$binDir)) {
+                  mkdir('vendor/'.$binDir);
+              }
+              foreach ($config['bin'] as $bin) {
+                  symlink('../../'.$bin, 'vendor/'.$binDir.'/'.basename($bin));
               }
           }
-          ?>
         '';
       };
 
@@ -264,8 +241,7 @@ let
         runHook postInstall
     '';
   } // extraArgs);
-in
-{
+in {
   composer = stdenv.lib.makeOverridable composer;
   buildZipPackage = stdenv.lib.makeOverridable buildZipPackage;
   buildPackage = stdenv.lib.makeOverridable buildPackage;
