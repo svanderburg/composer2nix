@@ -3,11 +3,13 @@
 { stdenv, writeTextFile, fetchurl, php, unzip }:
 
 let
-  composer = stdenv.mkDerivation {
-    name = "composer-1.6.5";
+  composer = stdenv.mkDerivation rec {
+    pname = "composer";
+    version = "1.9.0";
+
     src = fetchurl {
-      url = https://github.com/composer/composer/releases/download/1.6.5/composer.phar;
-      sha256 = "07xkpg9y1dd4s33y3cbf7r5fphpgc39mpm066a8m9y4ffsf539f0";
+      url = "https://github.com/composer/composer/releases/download/${version}/composer.phar";
+      sha256 = "01hnl0djspnw44ax466hc2h1w2s3lzna7w4ikzfg2vxf05szs9hi";
     };
     buildInputs = [ php ];
 
