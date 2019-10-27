@@ -1,5 +1,6 @@
 <?php
 namespace Composer2Nix\Sources;
+
 use PNDP\NixGenerator;
 use PNDP\AST\NixFile;
 
@@ -8,36 +9,35 @@ use PNDP\AST\NixFile;
  */
 class PathSource extends Source
 {
-	/** Path to the file artifact */
-	public $path;
+    /** Path to the file artifact */
+    public $path;
 
-	/**
-	 * Constructs a new Git dependency instance.
-	 *
-	 * @param array $package An array of package configuration properties
-	 * @param array $sourceObj An array of download properties
-	 */
-	public function __construct(array $package, array $sourceObj)
-	{
-		parent::__construct($package, $sourceObj);
-	}
+    /**
+     * Constructs a new Git dependency instance.
+     *
+     * @param array $package An array of package configuration properties
+     * @param array $sourceObj An array of download properties
+     */
+    public function __construct(array $package, array $sourceObj)
+    {
+        parent::__construct($package, $sourceObj);
+    }
 
-	/**
-	 * @see Source::fetch()
-	 */
-	public function fetch()
-	{
-		$this->path = $this->sourceObj['url'];
-	}
+    /**
+     * @see Source::fetch()
+     */
+    public function fetch()
+    {
+        $this->path = $this->sourceObj['url'];
+    }
 
-	/**
-	 * @see NixASTNode::toNixAST()
-	 */
-	public function toNixAST()
-	{
-		$ast = parent::toNixAST();
-		$ast["src"] = new NixFile($this->path);
-		return $ast;
-	}
+    /**
+     * @see NixASTNode::toNixAST()
+     */
+    public function toNixAST()
+    {
+        $ast = parent::toNixAST();
+        $ast["src"] = new NixFile($this->path);
+        return $ast;
+    }
 }
-?>

@@ -1,5 +1,6 @@
 <?php
 namespace Composer2Nix\Expressions;
+
 use PNDP\NixGenerator;
 use PNDP\AST\NixAttrReference;
 use PNDP\AST\NixASTNode;
@@ -18,79 +19,78 @@ use PNDP\AST\NixObject;
  */
 class CompositionExpression extends NixASTNode
 {
-	/** Path to the packages Nix expression */
-	public $outputFile;
+    /** Path to the packages Nix expression */
+    public $outputFile;
 
-	/** Path to the composer environment expression containing the build functionality */
-	public $composerEnvFile;
+    /** Path to the composer environment expression containing the build functionality */
+    public $composerEnvFile;
 
-	private function relativePath($from, $to, $ps = DIRECTORY_SEPARATOR)
-	{
-		$arFrom = explode($ps, rtrim($from, $ps));
-		$arTo = explode($ps, rtrim($to, $ps));
+    private function relativePath($from, $to, $ps = DIRECTORY_SEPARATOR)
+    {
+        $arFrom = explode($ps, rtrim($from, $ps));
+        $arTo = explode($ps, rtrim($to, $ps));
 
-		while(count($arFrom) && count($arTo) && ($arFrom[0] == $arTo[0]))
-		{
-			array_shift($arFrom);
-			array_shift($arTo);
-		}
-		return str_pad("", count($arFrom) * 3, '..'.$ps).implode($ps, $arTo);
-	}
+        while (count($arFrom) && count($arTo) && ($arFrom[0] == $arTo[0])) {
+            array_shift($arFrom);
+            array_shift($arTo);
+        }
+        return str_pad("", count($arFrom) * 3, '..'.$ps).implode($ps, $arTo);
+    }
 
-	/**
-	 * Composes a new composition expression object.
-	 *
-	 * @param string $outputFile Path to the packages Nix expression
-	 * @param string $composerEnvFile Path to the composer environment expression containing the build functionality
-	 */
-	public function __construct($baseDir, $outputFile, $composerEnvFile)
-	{
-		$this->outputFile = CompositionExpression::relativePath($baseDir, realpath($outputFile));
-		$this->composerEnvFile = CompositionExpression::relativePath($baseDir, realpath($composerEnvFile));
-	}
+    /**
+     * Composes a new composition expression object.
+     *
+     * @param string $outputFile Path to the packages Nix expression
+     * @param string $composerEnvFile Path to the composer environment expression containing the build functionality
+     */
+    public function __construct($baseDir, $outputFile, $composerEnvFile)
+    {
+        $this->outputFile = CompositionExpression::relativePath($baseDir, realpath($outputFile));
+        $this->composerEnvFile = CompositionExpression::relativePath($baseDir, realpath($composerEnvFile));
+    }
 
-	/**
-	 * Prefixes a given target path with ./ if it is relative and has no
-	 * such symbols in the beginning.
-	 *
-	 * @param string $target Target path
-	 * @return string An optionally prefixed target path
-	 */
-	private function prefixRelativePath($target)
-	{
-		if(substr($target, 0, 1) == "/" || substr($target, 0, 2) == "./" || substr($target, 0, 3) == "../")
-			return $target;
-		else
-			return "./".$target;
-	}
+    /**
+     * Prefixes a given target path with ./ if it is relative and has no
+     * such symbols in the beginning.
+     *
+     * @param string $target Target path
+     * @return string An optionally prefixed target path
+     */
+    private function prefixRelativePath($target)
+    {
+        if (substr($target, 0, 1) == "/" || substr($target, 0, 2) == "./" || substr($target, 0, 3) == "../") {
+            return $target;
+        } else {
+            return "./".$target;
+        }
+    }
 
-	/**
-	 * @see NixASTNode::toNixAST()
-	 */
-	public function toNixAST()
-	{
-		return new NixFunction(array(
-			"pkgs" => new NixFunInvocation(new NixImport(new NixExpression("<nixpkgs>")), array(
-				"system" => new NixInherit()
-			)),
-			"system" => new NixAttrReference(new NixExpression("builtins"), new NixExpression("currentSystem")),
-			"noDev" => false
-		), new NixLet(array(
-			"composerEnv" => new NixFunInvocation(new NixImport(new NixFile($this->prefixRelativePath($this->composerEnvFile))), array(
-				"stdenv" => new NixInherit("pkgs"),
-				"writeTextFile" => new NixInherit("pkgs"),
-				"fetchurl" => new NixInherit("pkgs"),
-				"php" => new NixInherit("pkgs"),
-				"unzip" => new NixInherit("pkgs")
-			))
-		), new NixFunInvocation(new NixImport(new NixFile($this->prefixRelativePath($this->outputFile))), array(
-			"composerEnv" => new NixInherit(),
-			"noDev" => new NixInherit(),
-			"fetchurl" => new NixInherit("pkgs"),
-			"fetchgit" => new NixInherit("pkgs"),
-			"fetchhg" => new NixInherit("pkgs"),
-			"fetchsvn" => new NixInherit("pkgs")
-		))));
-	}
+    /**
+     * @see NixASTNode::toNixAST()
+     */
+    public function toNixAST()
+    {
+        return new NixFunction(array(
+            "pkgs" => new NixFunInvocation(new NixImport(new NixExpression("<nixpkgs>")), array(
+                "system" => new NixInherit()
+            )),
+            "system" => new NixAttrReference(new NixExpression("builtins"), new NixExpression("currentSystem")),
+            "noDev" => false
+        ), new NixLet(array(
+            "composerEnv" => new NixFunInvocation(new NixImport(new NixFile($this->prefixRelativePath($this->composerEnvFile))), array(
+                "stdenv" => new NixInherit("pkgs"),
+                "writeTextFile" => new NixInherit("pkgs"),
+                "fetchurl" => new NixInherit("pkgs"),
+                "php" => new NixInherit("pkgs"),
+                "unzip" => new NixInherit("pkgs")
+            ))
+        ), new NixFunInvocation(new NixImport(new NixFile($this->prefixRelativePath($this->outputFile))), array(
+            "composerEnv" => new NixInherit(),
+            "noDev" => new NixInherit(),
+            "fetchurl" => new NixInherit("pkgs"),
+            "fetchgit" => new NixInherit("pkgs"),
+            "fetchhg" => new NixInherit("pkgs"),
+            "fetchsvn" => new NixInherit("pkgs")
+        ))));
+    }
 }
-?>

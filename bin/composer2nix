@@ -7,9 +7,9 @@ use Composer2Nix\Generator;
 
 function displayHelp($command)
 {
-	print("Usage: ".$command." [OPTION]\n");
-	print(" or: ".$command." -p NAME [OPTION]\n\n");
-	echo <<<EOT
+    print("Usage: ".$command." [OPTION]\n");
+    print(" or: ".$command." -p NAME [OPTION]\n\n");
+    echo <<<EOT
 This executable can be used to generate Nix expressions from a composer.lock
 (and a composer.json) file so that a package and all its dependencies can be
 deployed by the Nix package manager.
@@ -51,103 +51,110 @@ EOT;
 
 function displayVersion($command)
 {
-	print($command." (composer2nix 0.0.1)\n\nCopyright (C) 2017 Sander van der Burg\n");
+    print($command." (composer2nix 0.0.1)\n\nCopyright (C) 2017 Sander van der Burg\n");
 }
 
 /* Parse command line options */
 
 $options = getopt("p:hv", array(
-	"config-file:",
-	"lock-file:",
-	"package:",
-	"package-version:",
-	"output:",
-	"composition:",
-	"composer-env:",
-	"prefer-source",
-	"prefer-dist",
-	"no-dev",
-	"name:",
-	"executable",
-	"no-copy-composer-env",
-	"symlink-deps",
-	"help",
-	"version"
+    "config-file:",
+    "lock-file:",
+    "package:",
+    "package-version:",
+    "output:",
+    "composition:",
+    "composer-env:",
+    "prefer-source",
+    "prefer-dist",
+    "no-dev",
+    "name:",
+    "executable",
+    "no-copy-composer-env",
+    "symlink-deps",
+    "help",
+    "version"
 ));
 
-if($options === false)
-{
-	fwrite(STDERR, "Cannot parse the command-line options!\n");
-	exit(1);
+if ($options === false) {
+    fwrite(STDERR, "Cannot parse the command-line options!\n");
+    exit(1);
 }
 
 /* Parse the options themselves */
 
-if(array_key_exists("h", $options) || array_key_exists("help", $options))
-{
-	displayHelp($argv[0]);
-	exit();
+if (array_key_exists("h", $options) || array_key_exists("help", $options)) {
+    displayHelp($argv[0]);
+    exit();
 }
 
-if(array_key_exists("v", $options) || array_key_exists("version", $options))
-{
-	displayVersion($argv[0]);
-	exit();
+if (array_key_exists("v", $options) || array_key_exists("version", $options)) {
+    displayVersion($argv[0]);
+    exit();
 }
 
-if(array_key_exists("config-file", $options))
-	$configFile = $options["config-file"];
-else
-	$configFile = "composer.json";
+if (array_key_exists("config-file", $options)) {
+    $configFile = $options["config-file"];
+} else {
+    $configFile = "composer.json";
+}
 
-if(array_key_exists("lock-file", $options))
-	$lockFile = $options["lock-file"];
-else
-	$lockFile = "composer.lock";
+if (array_key_exists("lock-file", $options)) {
+    $lockFile = $options["lock-file"];
+} else {
+    $lockFile = "composer.lock";
+}
 
-if(array_key_exists("output", $options))
-	$outputFile = $options["output"];
-else
-	$outputFile = "php-packages.nix";
+if (array_key_exists("output", $options)) {
+    $outputFile = $options["output"];
+} else {
+    $outputFile = "php-packages.nix";
+}
 
-if(array_key_exists("composition", $options))
-	$compositionFile = $options["composition"];
-else
-	$compositionFile = "default.nix";
+if (array_key_exists("composition", $options)) {
+    $compositionFile = $options["composition"];
+} else {
+    $compositionFile = "default.nix";
+}
 
-if(array_key_exists("composer-env", $options))
-	$composerEnvFile = $options["composer-env"];
-else
-	$composerEnvFile = "composer-env.nix";
+if (array_key_exists("composer-env", $options)) {
+    $composerEnvFile = $options["composer-env"];
+} else {
+    $composerEnvFile = "composer-env.nix";
+}
 
-if(array_key_exists("p", $options))
-	$package = $options["p"];
-else if(array_key_exists("package", $options))
-	$package = $options["package"];
-else
-	$package = null;
+if (array_key_exists("p", $options)) {
+    $package = $options["p"];
+} elseif (array_key_exists("package", $options)) {
+    $package = $options["package"];
+} else {
+    $package = null;
+}
 
-if(array_key_exists("package-version", $options))
-	$versionSpec = $options["package-version"];
-else
-	$versionSpec = null;
+if (array_key_exists("package-version", $options)) {
+    $versionSpec = $options["package-version"];
+} else {
+    $versionSpec = null;
+}
 
 $noCopyComposerEnv = array_key_exists("no-copy-composer-env", $options);
 
 $preferredInstall = "dist";
 
-if(array_key_exists("prefer-source", $options))
-	$preferredInstall = "source";
+if (array_key_exists("prefer-source", $options)) {
+    $preferredInstall = "source";
+}
 
-if(array_key_exists("prefer-dist", $options))
-	$preferredInstall = "dist";
+if (array_key_exists("prefer-dist", $options)) {
+    $preferredInstall = "dist";
+}
 
 $noDev = array_key_exists("no-dev", $options);
 
-if(array_key_exists("name", $options))
-	$name = $options["name"];
-else
-	$name = null;
+if (array_key_exists("name", $options)) {
+    $name = $options["name"];
+} else {
+    $name = null;
+}
 
 $symlinkDependencies = array_key_exists("symlink-deps", $options);
 
@@ -155,19 +162,15 @@ $executable = array_key_exists("executable", $options);
 
 /* Execute the generator */
 
-try
-{
-	if($package === null)
-		Generator::generateNixExpressions($name, $executable, $preferredInstall, $noDev, $configFile, $lockFile, $outputFile, $compositionFile, $composerEnvFile, $noCopyComposerEnv, $symlinkDependencies);
-	else
-	{
-		Composer::composePackageFromDependency($package, $versionSpec, $preferredInstall, $noDev);
-		Generator::generateNixExpressions($package, true, $preferredInstall, $noDev, "composer.json", "composer.lock", $outputFile, $compositionFile, $composerEnvFile, $noCopyComposerEnv, $symlinkDependencies);
-	}
-}
-catch(Exception $ex)
-{
-	fwrite(STDERR, $ex->getMessage()."\n");
-	exit(1);
+try {
+    if ($package === null) {
+        Generator::generateNixExpressions($name, $executable, $preferredInstall, $noDev, $configFile, $lockFile, $outputFile, $compositionFile, $composerEnvFile, $noCopyComposerEnv, $symlinkDependencies);
+    } else {
+        Composer::composePackageFromDependency($package, $versionSpec, $preferredInstall, $noDev);
+        Generator::generateNixExpressions($package, true, $preferredInstall, $noDev, "composer.json", "composer.lock", $outputFile, $compositionFile, $composerEnvFile, $noCopyComposerEnv, $symlinkDependencies);
+    }
+} catch (Exception $ex) {
+    fwrite(STDERR, $ex->getMessage()."\n");
+    exit(1);
 }
 ?>
