@@ -49,7 +49,8 @@ class Package extends NixASTNode
         if (array_key_exists("license", $this->composerConfig->values)) {
             if (is_string($this->composerConfig->values["license"])) { // If the license is a string, just take it
                 $meta["license"] = $this->composerConfig->values["license"];
-            } elseif (is_array($this->composerConfig->values["license"])) { // If the license is an array, compose a comma , separated string from it
+            } elseif (is_array($this->composerConfig->values["license"])) {
+                // If the license is an array, compose a comma , separated string from it
                 if (count($this->composerConfig->values["license"]) > 0) {
                     $meta["license"] = $this->composerConfig->values["license"][0];
                 }

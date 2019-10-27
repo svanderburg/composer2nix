@@ -77,13 +77,16 @@ class CompositionExpression extends NixASTNode
             "system" => new NixAttrReference(new NixExpression("builtins"), new NixExpression("currentSystem")),
             "noDev" => false
         ), new NixLet(array(
-            "composerEnv" => new NixFunInvocation(new NixImport(new NixFile($this->prefixRelativePath($this->composerEnvFile))), array(
-                "stdenv" => new NixInherit("pkgs"),
-                "writeTextFile" => new NixInherit("pkgs"),
-                "fetchurl" => new NixInherit("pkgs"),
-                "php" => new NixInherit("pkgs"),
-                "unzip" => new NixInherit("pkgs")
-            ))
+            "composerEnv" => new NixFunInvocation(
+                new NixImport(new NixFile($this->prefixRelativePath($this->composerEnvFile))),
+                array(
+                    "stdenv" => new NixInherit("pkgs"),
+                    "writeTextFile" => new NixInherit("pkgs"),
+                    "fetchurl" => new NixInherit("pkgs"),
+                    "php" => new NixInherit("pkgs"),
+                    "unzip" => new NixInherit("pkgs")
+                )
+            )
         ), new NixFunInvocation(new NixImport(new NixFile($this->prefixRelativePath($this->outputFile))), array(
             "composerEnv" => new NixInherit(),
             "noDev" => new NixInherit(),

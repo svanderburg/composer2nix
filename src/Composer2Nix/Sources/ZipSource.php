@@ -40,7 +40,8 @@ class ZipSource extends Source
             $this->reference = "-".$this->sourceObj["reference"];
         }
 
-        if (substr($this->sourceObj["url"], 0, 7) === "http://" || substr($this->sourceObj["url"], 0, 8) === "https://") {
+        if (substr($this->sourceObj["url"], 0, 7) === "http://" ||
+            substr($this->sourceObj["url"], 0, 8) === "https://") {
             $this->hash = shell_exec('nix-prefetch-url "'.$this->sourceObj['url'].'"');
 
             if ($this->hash === false) {

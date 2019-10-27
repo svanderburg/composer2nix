@@ -50,7 +50,8 @@ class ComposerConfig
             }
         }
 
-        $this->packageName = strtr($packageName, "/", "-"); // replace / by - since / is not allowed in Nix package names
+        // replace / by - since / is not allowed in Nix package names
+        $this->packageName = strtr($packageName, "/", "-");
 
         /* Open the lock file and decode it */
 
@@ -62,7 +63,7 @@ class ComposerConfig
             }
 
             $lockConfig = json_decode($composerLockStr, true);
-            
+
             if (array_key_exists("packages", $lockConfig)) {
                 $this->packages = $lockConfig["packages"];
             } else {

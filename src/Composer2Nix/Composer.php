@@ -67,7 +67,11 @@ class Composer
             $params .= " --prefer-dist";
         }
 
-        $composerPath = shell_exec("nix-build --no-out-link -E 'let pkgs = import <nixpkgs> {}; composerEnv = import ".__DIR__."/composer-env.nix { inherit (pkgs) stdenv writeTextFile fetchurl php unzip; }; in composerEnv.composer'");
+        $composerPath = shell_exec(
+            "nix-build --no-out-link -E 'let pkgs = import <nixpkgs> {}; composerEnv = import ".
+            __DIR__."/composer-env.nix ".
+            "{ inherit (pkgs) stdenv writeTextFile fetchurl php unzip; }; in composerEnv.composer'"
+        );
         if ($composerPath === false) {
             throw new Exception("Cannot deploy the composer Nix package!");
         }

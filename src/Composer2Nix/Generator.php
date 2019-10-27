@@ -20,8 +20,13 @@ class Generator
         fclose($handle);
     }
 
-    private static function generatePackagesExpression($outputFile, ComposerConfig $config, $executable, $symlinkDependencies, $preferredInstall)
-    {
+    private static function generatePackagesExpression(
+        $outputFile,
+        ComposerConfig $config,
+        $executable,
+        $symlinkDependencies,
+        $preferredInstall
+    ) {
         $expr = new PackagesExpression($config, $executable, $symlinkDependencies, $preferredInstall);
         $expr->fetchSources();
         Generator::writeExprToFile($outputFile, $expr);
@@ -30,7 +35,10 @@ class Generator
     private static function generateCompositionExpression($compositionFile, $outputFile, $composerEnvFile)
     {
         $baseDir = realpath(dirname($compositionFile));
-        Generator::writeExprToFile($compositionFile, new CompositionExpression($baseDir, $outputFile, $composerEnvFile));
+        Generator::writeExprToFile(
+            $compositionFile,
+            new CompositionExpression($baseDir, $outputFile, $composerEnvFile)
+        );
     }
 
     private static function copyComposerEnv($composerEnvFile, $noCopyComposerEnv)
@@ -65,10 +73,27 @@ class Generator
      * @param bool $noCopyComposerEnv When set to true the composer build environment expression will not be copied
      * @param bool $symlinkDependencies Specifies whether the dependencies should be symlinked
      */
-    public static function generateNixExpressions($name, $executable, $preferredInstall, $noDev, $configFile, $lockFile, $outputFile, $compositionFile, $composerEnvFile, $noCopyComposerEnv, $symlinkDependencies)
-    {
+    public static function generateNixExpressions(
+        $name,
+        $executable,
+        $preferredInstall,
+        $noDev,
+        $configFile,
+        $lockFile,
+        $outputFile,
+        $compositionFile,
+        $composerEnvFile,
+        $noCopyComposerEnv,
+        $symlinkDependencies
+    ) {
         $composerConfig = new ComposerConfig($configFile, $lockFile, $name, $noDev);
-        Generator::generatePackagesExpression($outputFile, $composerConfig, $executable, $symlinkDependencies, $preferredInstall);
+        Generator::generatePackagesExpression(
+            $outputFile,
+            $composerConfig,
+            $executable,
+            $symlinkDependencies,
+            $preferredInstall
+        );
         Generator::copyComposerEnv($composerEnvFile, $noCopyComposerEnv);
         Generator::generateCompositionExpression($compositionFile, $outputFile, $composerEnvFile);
         Generator::checkVendorFolder($configFile);

@@ -164,13 +164,36 @@ $executable = array_key_exists("executable", $options);
 
 try {
     if ($package === null) {
-        Generator::generateNixExpressions($name, $executable, $preferredInstall, $noDev, $configFile, $lockFile, $outputFile, $compositionFile, $composerEnvFile, $noCopyComposerEnv, $symlinkDependencies);
+        Generator::generateNixExpressions(
+            $name,
+            $executable,
+            $preferredInstall,
+            $noDev,
+            $configFile,
+            $lockFile,
+            $outputFile,
+            $compositionFile,
+            $composerEnvFile,
+            $noCopyComposerEnv,
+            $symlinkDependencies
+        );
     } else {
         Composer::composePackageFromDependency($package, $versionSpec, $preferredInstall, $noDev);
-        Generator::generateNixExpressions($package, true, $preferredInstall, $noDev, "composer.json", "composer.lock", $outputFile, $compositionFile, $composerEnvFile, $noCopyComposerEnv, $symlinkDependencies);
+        Generator::generateNixExpressions(
+            $package,
+            true,
+            $preferredInstall,
+            $noDev,
+            "composer.json",
+            "composer.lock",
+            $outputFile,
+            $compositionFile,
+            $composerEnvFile,
+            $noCopyComposerEnv,
+            $symlinkDependencies
+        );
     }
 } catch (Exception $ex) {
     fwrite(STDERR, $ex->getMessage()."\n");
     exit(1);
 }
-?>
