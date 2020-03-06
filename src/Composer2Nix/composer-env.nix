@@ -217,10 +217,10 @@ let
         # Reconstruct autoload scripts
         # We use the optimize feature because Nix packages cannot change after they have been built
         # Using the dynamic loader for a Nix package is useless since there is nothing to dynamically reload.
-        composer dump-autoload --optimize ${stdenv.lib.optionalString noDev "--no-dev"}
+        composer dump-autoload --optimize ${stdenv.lib.optionalString noDev "--no-dev"} --no-scripts
 
         # Run the install step as a validation to confirm that everything works out as expected
-        composer install --optimize-autoloader ${stdenv.lib.optionalString noDev "--no-dev"}
+        composer install --optimize-autoloader ${stdenv.lib.optionalString noDev "--no-dev"} --no-scripts
 
         ${stdenv.lib.optionalString executable ''
           # Reconstruct the bin/ folder if we deploy an executable project
