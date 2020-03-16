@@ -8,13 +8,16 @@ $autoloadLocations = [
 	__DIR__ . '/../../../autoload.php',
 ];
 $loaded = false;
-foreach ($autoloadLocations as $autoload) {
+foreach ($autoloadLocations as $autoload)
+{
 	if (is_file($autoload)) {
 		require_once($autoload);
 		$loaded = true;
 	}
 }
-if (!$loaded) {
+
+if (!$loaded)
+{
 	fwrite(STDERR,
 		'You must set up the project dependencies, run the following commands:' . PHP_EOL .
 		'curl -s http://getcomposer.org/installer | php' . PHP_EOL .

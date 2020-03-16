@@ -38,6 +38,25 @@ To install this package with Nix, clone the Git repository and run:
 $ nix-env -f release.nix -iA package.x86_64-linux
 ```
 
+Building a development version
+==============================
+A development version can be deployed by checking out the Git repository and
+running:
+
+```bash
+$ nix-env -f release.nix -iA package.x86_64-linux
+```
+
+The above command installs the development `composer2nix` executable into the
+Nix profile of the user.
+
+Alternatively, you can use `composer` directly to install the project
+dependencies:
+
+```bash
+$ composer install
+```
+
 Usage
 =====
 You need a project providing a `composer.json` and (if applicable) a
