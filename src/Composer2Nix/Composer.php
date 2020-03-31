@@ -64,7 +64,7 @@ class Composer
 		else if($preferredInstall == "dist")
 			$params .= " --prefer-dist";
 
-		$composerPath = shell_exec("nix-build --no-out-link -E 'let pkgs = import <nixpkgs> {}; composerEnv = import ".__DIR__."/composer-env.nix { inherit (pkgs) stdenv writeTextFile fetchurl php unzip phpPackages; }; in composerEnv.composer'");
+		$composerPath = shell_exec("nix-build '<nixpkgs>' -A phpPackages.composer --no-out-link");
 		if($composerPath === false)
 			throw new Exception("Cannot deploy the composer Nix package!");
 
