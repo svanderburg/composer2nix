@@ -1,0 +1,19 @@
+{
+  "repositories": [
+      {
+          "type": "git",
+          "url": "https://github.com/svanderburg/php-sblayout.git"
+      },
+      {
+          "type": "vcs",
+          "url": "https://github.com/svanderburg/php-sbbiblio.git"
+      }
+  ],
+
+  "require": {
+    "phpdocumentor/phpdocumentor": "2.9.1",
+    "phpunit/phpunit": "9.0.x",
+    "svanderburg/php-sblayout": "dev-master",
+    "svanderburg/php-sbbiblio": "dev-master"
+  }
+}

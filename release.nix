@@ -24,4 +24,18 @@ in
       echo "doc api $out/doc" >> $out/nix-support/hydra-build-products
     '';
   }));
+
+  tests = {
+    dependencies = pkgs.lib.genAttrs systems (system:
+      import ./tests/dependencies {
+        inherit pkgs;
+      }
+    );
+
+    enduser = pkgs.lib.genAttrs systems (system:
+      import ./tests/enduser {
+        inherit pkgs;
+      }
+    );
+  };
 }
