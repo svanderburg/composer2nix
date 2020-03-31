@@ -21,7 +21,7 @@ in
     postInstall = ''
       vendor/bin/phpdoc
       mkdir -p $out/nix-support
-      echo "doc api $out/doc" >> $out/nix-support/hydra-build-products
+      echo "doc api $out/share/php/composer-svanderburg-composer2nix/doc" >> $out/nix-support/hydra-build-products
     '';
   }));
 
