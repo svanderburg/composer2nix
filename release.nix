@@ -16,7 +16,7 @@ in
   dev = pkgs.lib.genAttrs systems (system: (import ./default.nix {
     inherit pkgs system;
   }).override (oldAttrs: {
-    buildInputs = oldAttrs.buildInputs ++ [ pkgs.graphviz ];
+    buildInputs = [ pkgs.graphviz ];
     executable = true;
     postInstall = ''
       vendor/bin/phpdoc
