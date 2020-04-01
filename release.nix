@@ -5,7 +5,7 @@
 let
   pkgs = import nixpkgs {};
 in
-{
+rec {
   package = pkgs.lib.genAttrs systems (system: (import ./default.nix {
     inherit pkgs system;
     noDev = true;
@@ -37,5 +37,13 @@ in
         inherit pkgs;
       }
     );
+  };
+
+  release = pkgs.releaseTools.aggregate {
+    name = "composer2nix";
+    constituents = map (system: builtins.getAttr system package) systems
+    ++ map (system: builtins.getAttr system dev) systems
+    ++ map (system: builtins.getAttr system tests.dependencies) systems
+    ++ map (system: builtins.getAttr system tests.enduser) systems;
   };
 }
