@@ -4,7 +4,6 @@ use PNDP\NixGenerator;
 use PNDP\AST\NixExpression;
 use PNDP\AST\NixFile;
 use PNDP\AST\NixFunInvocation;
-use PNDP\AST\NixURL;
 
 /**
  * Represents a Zip package source.
@@ -61,7 +60,7 @@ class ZipSource extends Source
 		else
 		{
 			$src = new NixFunInvocation(new NixFile("fetchurl"), array(
-				"url" => new NixURL($this->sourceObj["url"]),
+				"url" => $this->sourceObj["url"],
 				"sha256" => substr($this->hash, 0, -1)
 			));
 		}

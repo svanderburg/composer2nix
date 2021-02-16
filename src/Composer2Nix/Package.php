@@ -6,7 +6,6 @@ use PNDP\AST\NixExpression;
 use PNDP\AST\NixFile;
 use PNDP\AST\NixFunInvocation;
 use PNDP\AST\NixInherit;
-use PNDP\AST\NixURL;
 
 /**
  * A representation of an composer package that is obtained from an external
@@ -42,7 +41,7 @@ class Package extends NixASTNode
 		$meta = array();
 
 		if(array_key_exists("homepage", $this->composerConfig->values))
-			$meta["homepage"] = new NixURL($this->composerConfig->values["homepage"]);
+			$meta["homepage"] = $this->composerConfig->values["homepage"];
 
 		if(array_key_exists("license", $this->composerConfig->values))
 		{
