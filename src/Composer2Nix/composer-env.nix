@@ -1,6 +1,6 @@
 # This file originates from composer2nix
 
-{ stdenv, writeTextFile, fetchurl, php, unzip, phpPackages }:
+{ stdenv, lib, writeTextFile, fetchurl, php, unzip, phpPackages }:
 
 let
   inherit (phpPackages) composer;
@@ -57,7 +57,7 @@ let
                   else
                       $allPackages = array();
 
-                  ${stdenv.lib.optionalString (!noDev) ''
+                  ${lib.optionalString (!noDev) ''
                     if(array_key_exists("packages-dev", $config))
                         $allPackages = array_merge($allPackages, $config["packages-dev"]);
                   ''}
@@ -108,7 +108,7 @@ let
       };
 
       bundleDependencies = dependencies:
-        stdenv.lib.concatMapStrings (dependencyName:
+        lib.concatMapStrings (dependencyName:
           let
             dependency = dependencies.${dependencyName};
           in
@@ -179,24 +179,24 @@ let
         # Copy or symlink the provided dependencies
         cd vendor
         ${bundleDependencies packages}
-        ${stdenv.lib.optionalString (!noDev) (bundleDependencies devPackages)}
+        ${lib.optionalString (!noDev) (bundleDependencies devPackages)}
         cd ..
 
         # Reconstruct autoload scripts
         # We use the optimize feature because Nix packages cannot change after they have been built
         # Using the dynamic loader for a Nix package is useless since there is nothing to dynamically reload.
-        composer dump-autoload --optimize ${stdenv.lib.optionalString noDev "--no-dev"}
+        composer dump-autoload --optimize ${lib.optionalString noDev "--no-dev"}
 
         # Run the install step as a validation to confirm that everything works out as expected
-        composer install --optimize-autoloader ${stdenv.lib.optionalString noDev "--no-dev"}
+        composer install --optimize-autoloader ${lib.optionalString noDev "--no-dev"}
 
-        ${stdenv.lib.optionalString executable ''
+        ${lib.optionalString executable ''
           # Reconstruct the bin/ folder if we deploy an executable project
           ${constructBin} composer.json
           ln -s $(pwd)/vendor/bin $out/bin
         ''}
 
-        ${stdenv.lib.optionalString (!symlinkDependencies) ''
+        ${lib.optionalString (!symlinkDependencies) ''
           # Patch the shebangs if possible
           if [ -d $(pwd)/vendor/bin ]
           then
@@ -232,7 +232,7 @@ let
   } // extraArgs);
 in
 {
-  composer = stdenv.lib.makeOverridable composer;
-  buildZipPackage = stdenv.lib.makeOverridable buildZipPackage;
-  buildPackage = stdenv.lib.makeOverridable buildPackage;
+  composer = lib.makeOverridable composer;
+  buildZipPackage = lib.makeOverridable buildZipPackage;
+  buildPackage = lib.makeOverridable buildPackage;
 }
