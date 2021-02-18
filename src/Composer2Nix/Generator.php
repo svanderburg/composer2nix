@@ -14,7 +14,7 @@ class Generator
 		if($handle === false)
 			throw new Exception("Cannot write to: ".$filename);
 
-		fwrite($handle, NixGenerator::phpToNix($expr, true));
+		fwrite($handle, NixGenerator::phpToNix($expr, true)."\n");
 		fclose($handle);
 	}
 
