@@ -175,7 +175,7 @@ let
 
         # Reconstruct the installed.json file from the lock file
         mkdir -p vendor/composer
-        ${reconstructInstalled} composer.lock > vendor/composer/installed.json
+        ${php}/bin/php ${reconstructInstalled} composer.lock > vendor/composer/installed.json
 
         # Copy or symlink the provided dependencies
         cd vendor
@@ -193,7 +193,7 @@ let
 
         ${lib.optionalString executable ''
           # Reconstruct the bin/ folder if we deploy an executable project
-          ${constructBin} composer.json
+          ${php}/bin/php ${constructBin} composer.json
           ln -s $(pwd)/vendor/bin $out/bin
         ''}
 
