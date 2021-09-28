@@ -56,7 +56,8 @@ class PackagesExpression extends NixASTNode
 			"fetchgit" => null,
 			"fetchhg" => null,
 			"fetchsvn" => null,
-			"noDev" => false
+			"noDev" => false,
+			"packageOverrides" => new NixNoDefault()
 		), new NixLet($this->sourcesCache->toNixAST(), $this->package));
 	}
 }

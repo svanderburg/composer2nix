@@ -22,6 +22,7 @@ let
     , src
     , packages ? {}
     , devPackages ? {}
+    , packageOverrides
     , buildInputs ? []
     , symlinkDependencies ? false
     , executable ? false
@@ -133,7 +134,12 @@ let
             ''}
           '') (builtins.attrNames dependencies);
 
-      extraArgs = removeAttrs args [ "name" "packages" "devPackages" "buildInputs" ];
+      extraArgs = removeAttrs args [ "name" "packages" "devPackages" "packageOverrides" "buildInputs" ];
+
+      overridePackages = ps:
+        let applicableOverrides = builtins.intersectAttrs ps packageOverrides;
+            applyOverride = name: f: ps.${name} // { src = f ps.${name}.src; };
+        in ps // builtins.mapAttrs applyOverride applicableOverrides;
     in
     stdenv.mkDerivation ({
       name = "composer-${name}";
@@ -179,8 +185,8 @@ let
 
         # Copy or symlink the provided dependencies
         cd vendor
-        ${bundleDependencies packages}
-        ${lib.optionalString (!noDev) (bundleDependencies devPackages)}
+        ${bundleDependencies (overridePackages packages)}
+        ${lib.optionalString (!noDev) (bundleDependencies (overridePackages devPackages))}
         cd ..
 
         # Reconstruct autoload scripts

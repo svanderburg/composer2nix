@@ -71,6 +71,7 @@ class Package extends NixASTNode
 			"executable" => $this->executable,
 			"packages" => new NixInherit(),
 			"devPackages" => new NixInherit(),
+			"packageOverrides" => new NixInherit(),
 			"noDev" => new NixInherit(),
 			"symlinkDependencies" => $this->symlinkDependencies,
 			"meta" => $this->generatePackageMetaDataAST()
