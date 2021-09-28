@@ -1,4 +1,4 @@
-{composerEnv, fetchurl, fetchgit ? null, fetchhg ? null, fetchsvn ? null, noDev ? false}:
+{composerEnv, fetchurl, fetchgit ? null, fetchhg ? null, fetchsvn ? null, noDev ? false, packageOverrides}:
 
 let
   packages = {
@@ -306,7 +306,7 @@ let
   devPackages = {};
 in
 composerEnv.buildPackage {
-  inherit packages devPackages noDev;
+  inherit packages devPackages packageOverrides noDev;
   name = "phpunit-phpunit";
   src = ./.;
   executable = true;

@@ -3,6 +3,7 @@ namespace Composer2Nix\Expressions;
 use PNDP\NixGenerator;
 use PNDP\AST\NixAttrReference;
 use PNDP\AST\NixASTNode;
+use PNDP\AST\NixAttrSet;
 use PNDP\AST\NixExpression;
 use PNDP\AST\NixFunction;
 use PNDP\AST\NixFunInvocation;
@@ -74,7 +75,8 @@ class CompositionExpression extends NixASTNode
 				"system" => new NixInherit()
 			)),
 			"system" => new NixAttrReference(new NixExpression("builtins"), new NixExpression("currentSystem")),
-			"noDev" => false
+			"noDev" => false,
+			"packageOverrides" => new NixAttrSet(array())
 		), new NixLet(array(
 			"composerEnv" => new NixFunInvocation(new NixImport(new NixFile($this->prefixRelativePath($this->composerEnvFile))), array(
 				"stdenv" => new NixInherit("pkgs"),
@@ -88,6 +90,7 @@ class CompositionExpression extends NixASTNode
 		), new NixFunInvocation(new NixImport(new NixFile($this->prefixRelativePath($this->outputFile))), array(
 			"composerEnv" => new NixInherit(),
 			"noDev" => new NixInherit(),
+			"packageOverrides" => new NixInherit(),
 			"fetchurl" => new NixInherit("pkgs"),
 			"fetchgit" => new NixInherit("pkgs"),
 			"fetchhg" => new NixInherit("pkgs"),
