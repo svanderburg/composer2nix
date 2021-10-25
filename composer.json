@@ -15,7 +15,7 @@
       "svanderburg/pndp": "0.0.2"
   },
   "require-dev": {
-      "phpdocumentor/phpdocumentor": "2.9.x"
+      "phpdocumentor/phpdocumentor": "^3.0"
   },
 
   "autoload": {
