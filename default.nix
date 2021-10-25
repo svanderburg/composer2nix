@@ -3,7 +3,7 @@
   }, system ? builtins.currentSystem, noDev ? false}:
 
 let
-  composerEnv = import ./src/Composer2Nix/composer-env.nix {
+  composerEnv = import ./composer-env.nix {
     inherit (pkgs) stdenv lib writeTextFile fetchurl php unzip phpPackages;
   };
 in
