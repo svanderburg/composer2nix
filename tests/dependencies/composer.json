@@ -11,8 +11,8 @@
   ],
 
   "require": {
-    "phpdocumentor/phpdocumentor": "2.9.1",
-    "phpunit/phpunit": "9.0.x",
+    "phpdocumentor/phpdocumentor": "3.0.0",
+    "phpunit/phpunit": "9.5.x",
     "svanderburg/php-sblayout": "dev-master",
     "svanderburg/php-sbbiblio": "dev-master"
   }

@@ -15,7 +15,7 @@ This code snippet explains the purpose of each test package:
 {
   "require": {
     // A common package and exact dependency specifier
-    "phpdocumentor/phpdocumentor": "2.9.1",
+    "phpdocumentor/phpdocumentor": "3.3.0",
     // A common package and version range dependency specifier
     "phpunit/phpunit": "9.0.x",
     // A reference to a Git repository using the master branch
