@@ -65,7 +65,9 @@ You need a project providing a `composer.json` and (if applicable) a
 Running the following command generates Nix expressions from the composer
 configuration files:
 
-    $ composer2nix
+```bash
+$ composer2nix
+```
 
 The above command produces three expressions: `php-packages.nix` containing the
 dependencies, `composer-env.nix` the build infrastructure and `default.nix` that
@@ -74,7 +76,9 @@ can be used to compose the package from its dependencies.
 Running the following command-line instruction deploys the package with Nix
 including its dependencies:
 
-    $ nix-build
+```bash
+$ nix-build
+```
 
 Deploying a web application project
 -----------------------------------
@@ -117,11 +121,15 @@ We can write the following `composer.json` configuration file to configure the
 With the following commmand we can let `composer` deploy the dependencies (and
 pinpoint the used versions in a `composer.lock` file):
 
-    $ composer install
+```bash
+$ composer install
+```
 
 Instead, we can also use `composer2nix`:
 
-    $ composer2nix
+```bash
+$ composer2nix
+```
 
 The above command generates Nix expressions that can be used to deploy the web
 application and its dependencies.
@@ -164,7 +172,9 @@ in
 
 We can deploy the above NixOS configuration as follows:
 
-    $ nixos-rebuild switch
+```bash
+$ nixos-rebuild switch
+```
 
 If the above command succeeds, we have a running system with the Apache
 webserver serving our web application.
@@ -177,11 +187,15 @@ projects implemented in PHP.
 For example, for the `composer2nix` project, we can generate a CLI-specific
 expression by adding the `--executable` parameter:
 
-    $ composer2nix --executable
+```bash
+$ composer2nix --executable
+```
 
 We can install the `composer2nix` executable in our Nix profile by running:
 
-    $ nix-env -f default.nix -i
+```bash
+$ nix-env -f default.nix -i
+```
 
 Deploying third-party end user packages
 ---------------------------------------
@@ -191,21 +205,29 @@ party end-user packages, typically command-line tools.
 We can use `composer2nix` to automatically generate expressions from a third
 party package that comes from Packagist, such as `phpunit`:
 
-    $ composer2nix -p phpunit/phpunit
+```bash
+$ composer2nix -p phpunit/phpunit
+```
 
 After generating the expressions, we can deploy `phpunit` in our Nix profile,
 by running:
 
-    $ nix-env -f default.nix -iA phpunit-phpunit
+```bash
+$ nix-env -f default.nix -iA phpunit-phpunit
+```
 
 And after installing the package with Nix, we should be able to run:
 
-    $ phpunit --version
+```bash
+$ phpunit --version
+```
 
 By default, `composer2nix` attempts to download the latest version of a package.
 We can also add a parameter that specifies the version we want to use:
 
-    $ composer2nix -p phpunit/phpunit --package-version 6.2.0
+```bash
+$ composer2nix -p phpunit/phpunit --package-version 6.2.0
+```
 
 The above command-line instruction deploys `phpunit` version `6.2.0`.
 
@@ -243,7 +265,9 @@ phpPackage
 
 We can deploy the above package with the following command-line instruction:
 
-    $ nix-build override.nix
+```bash
+$ nix-build override.nix
+```
 
 Removing composer artifacts
 ---------------------------
@@ -342,7 +366,9 @@ not work properly if a dependency is a symlink.
 It is also possible to symlink all dependencies as opposed to copying them which
 makes deployments faster and more space efficient:
 
-    $ composer2nix --symlink-dependencies
+```bash
+$ composer2nix --symlink-dependencies
+```
 
 Limitations
 ===========
