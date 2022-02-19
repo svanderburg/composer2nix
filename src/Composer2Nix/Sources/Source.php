@@ -1,7 +1,7 @@
 <?php
 namespace Composer2Nix\Sources;
-use PNDP\AST\NixASTNode;
 use Exception;
+use PNDP\AST\NixASTNode;
 
 /**
  * Represents a dependency of a composer package that can be converted into a

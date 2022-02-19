@@ -598,7 +598,7 @@ let
         name = "svanderburg-php-sblayout-83d6d110494cdceb13da48a1acfa0ae989ba9ecd";
         url = "https://github.com/svanderburg/php-sblayout.git";
         rev = "83d6d110494cdceb13da48a1acfa0ae989ba9ecd";
-        sha256 = null;
+        sha256 = "1nxvppsxn6i4gczzmjlr50p94yw8v50s6l87qvpiyhh5162dyr3n";
       };
     };
     "symfony/cache" = {

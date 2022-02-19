@@ -1,5 +1,6 @@
 <?php
 namespace Composer2Nix\Sources;
+use Exception;
 use PNDP\NixGenerator;
 use PNDP\AST\NixExpression;
 use PNDP\AST\NixFunInvocation;
@@ -30,7 +31,7 @@ class GitSource extends Source
 	{
 		$outputStr = shell_exec('nix-prefetch-git "'.$this->sourceObj['url'].'" '.$this->sourceObj["reference"]);
 
-		if($outputStr === false)
+		if($outputStr === false || $outputStr === null)
 			throw new Exception("Error while invoking nix-prefetch-git");
 		else
 		{

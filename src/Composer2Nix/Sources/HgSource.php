@@ -1,5 +1,6 @@
 <?php
 namespace Composer2Nix\Sources;
+use Exception;
 use PNDP\NixGenerator;
 use PNDP\AST\NixExpression;
 use PNDP\AST\NixFunInvocation;
