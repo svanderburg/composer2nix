@@ -15,9 +15,9 @@ This code snippet explains the purpose of each test package:
 {
   "require": {
     // A common package and exact dependency specifier
-    "phpdocumentor/phpdocumentor": "3.3.0",
+    "seld/jsonlint": "1.8.3",
     // A common package and version range dependency specifier
-    "phpunit/phpunit": "9.0.x",
+    "phpunit/phpunit": "9.5.x",
     // A reference to a Git repository using the master branch
     "svanderburg/php-sblayout": "dev-master",
     // A reference to a generic VCS repository using the a Git master branch

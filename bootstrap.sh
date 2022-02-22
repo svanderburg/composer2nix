@@ -3,9 +3,11 @@
 # This script bootstraps composer2nix with composer2nix and regenerates the Nix
 # expressions for the testcases.
 # To do this you need to vanilla composer package manager installed on your
-# system. You can install composer from Nixpkgs as follows:
+# system.
 #
-# nix-env -f '<nixpkgs>' -iA php phpPackages.composer nix-prefetch-scripts
+# You can spawn a nix-shell with composer and all relevant tools as follows:
+#
+# nix-shell -p php phpPackages.composer nix-prefetch-scripts
 
 composer install
 php bin/composer2nix --composer-env src/Composer2Nix/composer-env.nix --no-copy-composer-env --executable
