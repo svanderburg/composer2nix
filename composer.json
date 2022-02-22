@@ -14,9 +14,6 @@
   "require": {
       "svanderburg/pndp": "0.0.2"
   },
-  "require-dev": {
-      "phpdocumentor/phpdocumentor": "3.0.x"
-  },
 
   "autoload": {
       "psr-4": { "Composer2Nix\\": "src/Composer2Nix" }
