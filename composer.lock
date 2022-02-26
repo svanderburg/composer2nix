@@ -4,24 +4,21 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "789da96d2d422a9589a6e1d470c64fe3",
+    "content-hash": "2a17273f833d79f19743b3e5eebbb95b",
     "packages": [
         {
             "name": "svanderburg/pndp",
-            "version": "v0.0.2",
+            "version": "v0.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/svanderburg/pndp.git",
-                "reference": "4bfe9c4120c23354ab8dc295957dc3009a39bff0"
+                "reference": "bc795b341d95c24bb577e0d7a4a37fde98b1cce8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/svanderburg/pndp/zipball/4bfe9c4120c23354ab8dc295957dc3009a39bff0",
-                "reference": "4bfe9c4120c23354ab8dc295957dc3009a39bff0",
+                "url": "https://api.github.com/repos/svanderburg/pndp/zipball/bc795b341d95c24bb577e0d7a4a37fde98b1cce8",
+                "reference": "bc795b341d95c24bb577e0d7a4a37fde98b1cce8",
                 "shasum": ""
-            },
-            "require-dev": {
-                "phpdocumentor/phpdocumentor": "2.9.x"
             },
             "bin": [
                 "bin/pndp-build"
@@ -46,9 +43,9 @@
             "description": "PNDP: An internal DSL for Nix in PHP",
             "support": {
                 "issues": "https://github.com/svanderburg/pndp/issues",
-                "source": "https://github.com/svanderburg/pndp/tree/v0.0.2"
+                "source": "https://github.com/svanderburg/pndp/tree/v0.0.4"
             },
-            "time": "2017-10-22T12:43:22+00:00"
+            "time": "2022-02-26T22:15:06+00:00"
         }
     ],
     "packages-dev": [],

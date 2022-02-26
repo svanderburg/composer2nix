@@ -9,26 +9,26 @@ use Exception;
 class ComposerConfig
 {
 	/** Name of the package or null to derive it from the config file */
-	public $packageName;
+	public ?string $packageName;
 
 	/** An array of packages that should be deployed as dependencies */
-	public $packages;
+	public array $packages;
 
 	/** An array of packages that should be deployed as development dependencies */
-	public $devPackages;
+	public array $devPackages;
 
 	/** An array of config values derived from the configuration files */
-	public $values;
+	public array $values;
 
 	/**
 	 * Constructs a new composer configuration object.
 	 *
-	 * @param string $configFile Path to a composer.json configuration file
-	 * @param string $lockFile Path to a composer.lock configuration file
-	 * @param string $packageName Name of the package or null to derive it from the config file
-	 * @param bool $noDev Indicates whether development dependencies should be excluded or not
+	 * @param $configFile Path to a composer.json configuration file
+	 * @param $lockFile Path to a composer.lock configuration file
+	 * @param $packageName Name of the package or null to derive it from the config file
+	 * @param $noDev Indicates whether development dependencies should be excluded or not
 	 */
-	public function __construct($configFile, $lockFile, $packageName, $noDev)
+	public function __construct(string $configFile, string $lockFile, ?string $packageName, bool $noDev)
 	{
 		/* Open the composer.json file and decode it */
 		$composerJSONStr = file_get_contents($configFile);

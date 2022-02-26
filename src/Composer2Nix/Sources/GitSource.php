@@ -11,13 +11,13 @@ use PNDP\AST\NixFunInvocation;
 class GitSource extends Source
 {
 	/** Stores the output hash of the download */
-	public $hash;
+	public string $hash;
 
 	/**
 	 * Constructs a new Git dependency instance.
 	 *
-	 * @param array $package An array of package configuration properties
-	 * @param array $sourceObj An array of download properties
+	 * @param $package An array of package configuration properties
+	 * @param $sourceObj An array of download properties
 	 */
 	public function __construct(array $package, array $sourceObj)
 	{
@@ -27,7 +27,7 @@ class GitSource extends Source
 	/**
 	 * @see Source::fetch()
 	 */
-	public function fetch()
+	public function fetch(): void
 	{
 		$outputStr = shell_exec('nix-prefetch-git "'.$this->sourceObj['url'].'" '.$this->sourceObj["reference"]);
 

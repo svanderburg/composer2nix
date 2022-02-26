@@ -17,20 +17,20 @@ use PNDP\AST\NixNoDefault;
 class PackagesExpression extends NixASTNode
 {
 	/** Contains a cache with all the dependencies' sources */
-	public $sourcesCache;
+	public SourcesCache $sourcesCache;
 
 	/** Contains all properties of the composer package to deploy */
-	public $package;
+	public Package $package;
 
 	/**
 	 * Creates a new packages expression instance.
 	 *
-	 * @param ComposerConfig $composerConfig The composer package configuration
-	 * @param bool $executable Specifies whether the package to be deployed is an executable project
-	 * @param bool $symlinkDependencies Specifies whether the dependencies should be symlinked
-	 * @param string $preferredInstall Specifies the preferred installation source ('dist' or 'source')
+	 * @param $composerConfig The composer package configuration
+	 * @param $executable Specifies whether the package to be deployed is an executable project
+	 * @param $symlinkDependencies Specifies whether the dependencies should be symlinked
+	 * @param $preferredInstall Specifies the preferred installation source ('dist' or 'source')
 	 */
-	public function __construct(ComposerConfig $composerConfig, $executable, $symlinkDependencies, $preferredInstall)
+	public function __construct(ComposerConfig $composerConfig, bool $executable, bool $symlinkDependencies, string $preferredInstall)
 	{
 		$this->executable = $executable;
 		$this->sourcesCache = new SourcesCache($composerConfig, $preferredInstall);
@@ -40,7 +40,7 @@ class PackagesExpression extends NixASTNode
 	/**
 	 * Fetches the package metadata of all sources.
 	 */
-	public function fetchSources()
+	public function fetchSources(): void
 	{
 		$this->sourcesCache->fetchSources();
 	}

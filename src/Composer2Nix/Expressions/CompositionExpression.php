@@ -19,12 +19,12 @@ use PNDP\AST\NixObject;
 class CompositionExpression extends NixASTNode
 {
 	/** Path to the packages Nix expression */
-	public $outputFile;
+	public string $outputFile;
 
 	/** Path to the composer environment expression containing the build functionality */
-	public $composerEnvFile;
+	public string $composerEnvFile;
 
-	private function relativePath($from, $to, $ps = DIRECTORY_SEPARATOR)
+	private function relativePath(string $from, string $to, $ps = DIRECTORY_SEPARATOR): string
 	{
 		$arFrom = explode($ps, rtrim($from, $ps));
 		$arTo = explode($ps, rtrim($to, $ps));
@@ -40,10 +40,11 @@ class CompositionExpression extends NixASTNode
 	/**
 	 * Composes a new composition expression object.
 	 *
-	 * @param string $outputFile Path to the packages Nix expression
-	 * @param string $composerEnvFile Path to the composer environment expression containing the build functionality
+	 * @param $baseDir Directory from which relative paths will be decided
+	 * @param $outputFile Path to the packages Nix expression
+	 * @param $composerEnvFile Path to the composer environment expression containing the build functionality
 	 */
-	public function __construct($baseDir, $outputFile, $composerEnvFile)
+	public function __construct(string $baseDir, string $outputFile, string $composerEnvFile)
 	{
 		$this->outputFile = CompositionExpression::relativePath($baseDir, realpath($outputFile));
 		$this->composerEnvFile = CompositionExpression::relativePath($baseDir, realpath($composerEnvFile));
@@ -53,10 +54,10 @@ class CompositionExpression extends NixASTNode
 	 * Prefixes a given target path with ./ if it is relative and has no
 	 * such symbols in the beginning.
 	 *
-	 * @param string $target Target path
-	 * @return string An optionally prefixed target path
+	 * @param $target Target path
+	 * @return An optionally prefixed target path
 	 */
-	private function prefixRelativePath($target)
+	private function prefixRelativePath(string $target): string
 	{
 		if(substr($target, 0, 1) == "/" || substr($target, 0, 2) == "./" || substr($target, 0, 3) == "../")
 			return $target;

@@ -10,17 +10,17 @@ use PNDP\AST\NixASTNode;
 abstract class Source extends NixASTNode
 {
 	/** An array of package configuration properties */
-	public $package;
+	public array $package;
 
 	/** An array of download properties */
-	protected $sourceObj;
+	protected array $sourceObj;
 
 	/**
 	 * Creates a new source instance. This constructor should never be used
 	 * directly. Instead, use Source::constructSource()
 	 *
-	 * @param array $package An array of package configuration properties
-	 * @param array $sourceObj An array of download properties
+	 * @param $package An array of package configuration properties
+	 * @param $sourceObj An array of download properties
 	 */
 	public function __construct(array $package, array $sourceObj)
 	{
@@ -28,7 +28,7 @@ abstract class Source extends NixASTNode
 		$this->sourceObj = $sourceObj;
 	}
 
-	private static function selectSourceObject($preferredInstall, array $package)
+	private static function selectSourceObject(string $preferredInstall, array $package): array
 	{
 		if($preferredInstall === "source")
 		{
@@ -53,12 +53,12 @@ abstract class Source extends NixASTNode
 	/**
 	 * Constructs a new source from a package configuration.
 	 *
-	 * @param array $package An array of package configuration properties
-	 * @param string $preferredInstall Preferred installation type (source or dist)
-	 * @return Source A specific kind of dependency object derived from the source's type
+	 * @param $package An array of package configuration properties
+	 * @param $preferredInstall Preferred installation type (source or dist)
+	 * @return A specific kind of dependency object derived from the source's type
 	 * @throw An exception if the type is unrecognized
 	 */
-	public static function constructSource(array $package, $preferredInstall)
+	public static function constructSource(array $package, string $preferredInstall): Source
 	{
 		$sourceObj = Source::selectSourceObject($preferredInstall, $package);
 
@@ -82,7 +82,7 @@ abstract class Source extends NixASTNode
 	/**
 	 * Fetches the package metadata from the external source.
 	 */
-	abstract public function fetch();
+	abstract public function fetch(): void;
 
 	/**
 	 * @see NixASTNode::toNixAST()

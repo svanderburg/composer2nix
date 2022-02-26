@@ -10,30 +10,30 @@ use PNDP\AST\NixAttrSet;
 class SourcesCache extends NixASTNode
 {
 	/** The composer package configuration */
-	public $composerConfig;
+	public ComposerConfig $composerConfig;
 
 	/** Specifies the preferred installation source ('dist' or 'source') */
-	public $preferredInstall;
+	public string $preferredInstall;
 
 	/** Contains all relevant metadata for the runtime dependencies */
-	public $packages;
+	public array $packages;
 
 	/** Contains all relevant metadata for the development dependencies */
-	public $devPackages;
+	public array $devPackages;
 
 	/**
 	 * Creates a new sources cache instance.
 	 *
-	 * @param ComposerConfig $composerConfig The composer package configuration
-	 * @param string $preferredInstall Specifies the preferred installation source ('dist' or 'source')
+	 * @param $composerConfig The composer package configuration
+	 * @param $preferredInstall Specifies the preferred installation source ('dist' or 'source')
 	 */
-	public function __construct(ComposerConfig $composerConfig, $preferredInstall)
+	public function __construct(ComposerConfig $composerConfig, string $preferredInstall)
 	{
 		$this->composerConfig = $composerConfig;
 		$this->preferredInstall = $preferredInstall;
 	}
 
-	private function fetchSourcesOfPackages(array $packages)
+	private function fetchSourcesOfPackages(array $packages): array
 	{
 		$sources = array();
 
@@ -50,7 +50,7 @@ class SourcesCache extends NixASTNode
 	/**
 	 * Fetches the package metadata of all sources.
 	 */
-	public function fetchSources()
+	public function fetchSources(): void
 	{
 		$this->packages = $this->fetchSourcesOfPackages($this->composerConfig->packages);
 		$this->devPackages = $this->fetchSourcesOfPackages($this->composerConfig->devPackages);

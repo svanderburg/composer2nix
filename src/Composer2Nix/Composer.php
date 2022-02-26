@@ -4,7 +4,7 @@ use Exception;
 
 class Composer
 {
-	private static function rrmdir($dir)
+	private static function rrmdir(string $dir): void
 	{
 		if(is_dir($dir))
 		{
@@ -28,12 +28,12 @@ class Composer
 	 * Composes a composer.json and composer.lock file for a given package
 	 * and composes a CLI-utility project from it.
 	 *
-	 * @param string $dependencyName Name of the package
-	 * @param string $versionSpec The desired version to deploy or null for the latest version
-	 * @param string $preferredInstall Preferred package installation type (source or dist)
-	 * @param bool $noDev When set true it will exclude development dependencies
+	 * @param $dependencyName Name of the package
+	 * @param $versionSpec The desired version to deploy or null for the latest version
+	 * @param $preferredInstall Preferred package installation type (source or dist)
+	 * @param $noDev When set true it will exclude development dependencies
 	 */
-	public static function composePackageFromDependency($dependencyName, $versionSpec, $preferredInstall, $noDev)
+	public static function composePackageFromDependency(string $dependencyName, ?string $versionSpec, string $preferredInstall, bool $noDev): void
 	{
 		/* Generate a composer.json file with only the requested dependency */
 		$handle = fopen("composer.json", "w");

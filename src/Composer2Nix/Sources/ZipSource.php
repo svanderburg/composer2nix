@@ -12,16 +12,16 @@ use PNDP\AST\NixFunInvocation;
 class ZipSource extends Source
 {
 	/* Contains a SHA1 reference to the corresponding Git revision */
-	public $reference;
+	public string $reference;
 
 	/** Stores the output hash of the download */
-	public $hash;
+	public string $hash;
 
 	/**
 	 * Constructs a new Zip dependency instance.
 	 *
-	 * @param array $package An array of package configuration properties
-	 * @param array $sourceObj An array of download properties
+	 * @param $package An array of package configuration properties
+	 * @param $sourceObj An array of download properties
 	 */
 	public function __construct(array $package, array $sourceObj)
 	{
@@ -31,7 +31,7 @@ class ZipSource extends Source
 	/**
 	 * @see Source::fetch()
 	 */
-	public function fetch()
+	public function fetch(): void
 	{
 		if($this->sourceObj["reference"] == "")
 			$this->reference = "";

@@ -14,29 +14,29 @@ use PNDP\AST\NixInherit;
 class Package extends NixASTNode
 {
 	/** The composer package configuration */
-	public $composerConfig;
+	public ComposerConfig $composerConfig;
 
 	/** Specifies whether the package to be deployed is an executable project */
-	public $executable;
+	public bool $executable;
 
 	/** Specifies whether the dependencies should be symlinked */
-	public $symlinkDependencies;
+	public bool $symlinkDependencies;
 
 	/**
 	 * Constructs a new package instance.
 	 *
-	 * @param ComposerConfig $composerConfig The composer package configuration
-	 * @param bool $executable Specifies whether the package to be deployed is an executable project
-	 * @param bool $symlinkDependencies Specifies whether the dependencies should be symlinked
+	 * @param $composerConfig The composer package configuration
+	 * @param $executable Specifies whether the package to be deployed is an executable project
+	 * @param $symlinkDependencies Specifies whether the dependencies should be symlinked
 	 */
-	public function __construct(ComposerConfig $composerConfig, $executable, $symlinkDependencies)
+	public function __construct(ComposerConfig $composerConfig, bool $executable, bool $symlinkDependencies)
 	{
 		$this->composerConfig = $composerConfig;
 		$this->executable = $executable;
 		$this->symlinkDependencies = $symlinkDependencies;
 	}
 
-	private function generatePackageMetaDataAST()
+	private function generatePackageMetaDataAST(): NixAttrSet
 	{
 		$meta = array();
 

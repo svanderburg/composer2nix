@@ -29,7 +29,7 @@ if (!$loaded)
 use Composer2Nix\Composer;
 use Composer2Nix\Generator;
 
-function displayHelp($command)
+function displayHelp(string $command): void
 {
 	print("Usage: ".$command." [OPTION]\n");
 	print(" or: ".$command." -p NAME [OPTION]\n\n");
@@ -73,7 +73,7 @@ Options:
 EOT;
 }
 
-function displayVersion($command)
+function displayVersion(string $command): void
 {
 	print($command." (composer2nix 0.0.1)\n\nCopyright (C) 2017 Sander van der Burg\n");
 }

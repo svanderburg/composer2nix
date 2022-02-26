@@ -9,13 +9,13 @@ use PNDP\AST\NixFile;
 class PathSource extends Source
 {
 	/** Path to the file artifact */
-	public $path;
+	public string $path;
 
 	/**
 	 * Constructs a new Git dependency instance.
 	 *
-	 * @param array $package An array of package configuration properties
-	 * @param array $sourceObj An array of download properties
+	 * @param $package An array of package configuration properties
+	 * @param $sourceObj An array of download properties
 	 */
 	public function __construct(array $package, array $sourceObj)
 	{
@@ -25,7 +25,7 @@ class PathSource extends Source
 	/**
 	 * @see Source::fetch()
 	 */
-	public function fetch()
+	public function fetch(): void
 	{
 		$this->path = $this->sourceObj['url'];
 	}
