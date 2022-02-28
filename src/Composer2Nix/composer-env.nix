@@ -134,10 +134,9 @@ let
             ''}
           '') (builtins.attrNames dependencies);
 
-      extraArgs = removeAttrs args [ "name" "packages" "devPackages" "buildInputs" ];
+      extraArgs = removeAttrs args [ "packages" "devPackages" "buildInputs" ];
     in
     stdenv.mkDerivation ({
-      name = "composer-${name}";
       buildInputs = [ php composer ] ++ buildInputs;
 
       inherit unpackPhase buildPhase;
