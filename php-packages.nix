@@ -18,7 +18,7 @@ in
 composerEnv.buildPackage {
   inherit packages devPackages noDev;
   name = "svanderburg-composer2nix";
-  src = ./.;
+  src = composerEnv.filterSrc ./.;
   executable = true;
   symlinkDependencies = false;
   meta = {

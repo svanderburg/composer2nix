@@ -348,7 +348,7 @@ in
 composerEnv.buildPackage {
   inherit packages devPackages noDev;
   name = "phpunit-phpunit";
-  src = ./.;
+  src = composerEnv.filterSrc ./.;
   executable = true;
   symlinkDependencies = false;
   meta = {};

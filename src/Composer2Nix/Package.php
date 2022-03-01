@@ -67,7 +67,7 @@ class Package extends NixASTNode
 	{
 		return new NixFunInvocation(new NixExpression("composerEnv.buildPackage"), array(
 			"name" => $this->composerConfig->packageName,
-			"src" => new NixFile("./."),
+			"src" => new NixFunInvocation(new NixExpression("composerEnv.filterSrc"), new NixFile("./.")),
 			"executable" => $this->executable,
 			"packages" => new NixInherit(),
 			"devPackages" => new NixInherit(),

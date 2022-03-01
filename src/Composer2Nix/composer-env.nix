@@ -4,6 +4,10 @@
 
 let
   inherit (phpPackages) composer;
+
+  filterSrc = src:
+    builtins.filterSource (path: type: type != "directory" || (baseNameOf path != ".git" && baseNameOf path != ".git" && baseNameOf path != ".svn")) src;
+
   buildZipPackage = { name, src }:
     stdenv.mkDerivation {
       inherit name src;
@@ -233,6 +237,7 @@ let
   } // extraArgs);
 in
 {
+  inherit filterSrc;
   composer = lib.makeOverridable composer;
   buildZipPackage = lib.makeOverridable buildZipPackage;
   buildPackage = lib.makeOverridable buildPackage;

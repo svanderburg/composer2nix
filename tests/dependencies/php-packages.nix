@@ -377,7 +377,7 @@ in
 composerEnv.buildPackage {
   inherit packages devPackages noDev;
   name = "dependencies";
-  src = ./.;
+  src = composerEnv.filterSrc ./.;
   executable = false;
   symlinkDependencies = false;
   meta = {};
