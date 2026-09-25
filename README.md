@@ -57,6 +57,24 @@ dependencies:
 $ composer install
 ```
 
+Sometimes you may need to build against a bleeding-edge version of PNDP rather
+than a released version. To do this, make a Git clone of `pndp` in the same base
+directory as `composer2nix`. Then use the `composer.dev.json` file, rather than
+the `composer.json` file. You can temporarily rename it, by running the
+following commands:
+
+```bash
+cp composer.json composer.orig.json
+cp composer.dev.json composer.json
+```
+
+You should also remove the lock file and reinstall the dependencies:
+
+```bash
+rm composer.lock
+composer install
+```
+
 Usage
 =====
 You need a project providing a `composer.json` and (if applicable) a
