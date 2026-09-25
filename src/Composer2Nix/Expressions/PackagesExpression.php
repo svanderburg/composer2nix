@@ -16,6 +16,9 @@ use PNDP\AST\NixNoDefault;
  */
 class PackagesExpression extends NixASTNode
 {
+	/** Specifies whether the package to be deployed is an executable project */
+	public bool $executable;
+
 	/** Contains a cache with all the dependencies' sources */
 	public SourcesCache $sourcesCache;
 
