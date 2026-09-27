@@ -21,7 +21,7 @@ rec {
     postInstall = ''
       doxygen
       mkdir -p $out/nix-support
-      echo "doc api $out/share/php/composer-svanderburg-composer2nix/doc/html" >> $out/nix-support/hydra-build-products
+      echo "doc api $out/share/php/svanderburg-composer2nix/doc/html" >> $out/nix-support/hydra-build-products
     '';
   }));
 

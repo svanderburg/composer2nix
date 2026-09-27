@@ -5,10 +5,10 @@ let
     "svanderburg/pndp" = {
       targetDir = "";
       src = composerEnv.buildZipPackage {
-        name = "svanderburg-pndp-bc795b341d95c24bb577e0d7a4a37fde98b1cce8";
+        name = "svanderburg-pndp-098f3fc2906b54f50c6b18aa045e5e414bbe3b92";
         src = fetchurl {
-          url = "https://api.github.com/repos/svanderburg/pndp/zipball/bc795b341d95c24bb577e0d7a4a37fde98b1cce8";
-          sha256 = "1y46wsccjwdkvs1c1bklwbp7crsg0axyr7ncdibbny1sr54xb24i";
+          url = "https://api.github.com/repos/svanderburg/pndp/zipball/098f3fc2906b54f50c6b18aa045e5e414bbe3b92";
+          sha256 = "1kqvwsmbq5rxbbnj2shkzyjs20xz09yw1ffmchmz87d4yrq78f6k";
         };
       };
     };

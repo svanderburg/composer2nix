@@ -11,8 +11,8 @@
   ],
 
   "require": {
-    "seld/jsonlint": "1.8.3",
-    "phpunit/phpunit": "9.5.x",
+    "seld/jsonlint": "1.12.1",
+    "phpunit/phpunit": "13.3.x",
     "svanderburg/php-sblayout": "dev-master",
     "svanderburg/php-sbbiblio": "dev-master"
   }
