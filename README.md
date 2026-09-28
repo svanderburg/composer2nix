@@ -28,14 +28,43 @@ Installation
 This package can be installed with both `composer` and the Nix package manager.
 To install it with composer, run:
 
+### composer
+
 ```bash
 $ composer global require svanderburg/composer2nix
 ```
 
-To install this package with Nix, clone the Git repository and run:
+### nix-env
+
+To install this package with `nix-env`, clone the Git repository and run:
 
 ```bash
 $ nix-env -f release.nix -iA package.x86_64-linux
+```
+
+### nix-shell
+
+To install this package with `nix-shell`, use a `shell.nix` like:
+
+```
+{ pkgs ? import <nixpkgs> {} }:
+
+let
+  c2nix-src = pkgs.fetchFromGitHub {
+    owner = "svanderburg";
+    repo = "composer2nix";
+    rev = "tags/v0.0.6";
+    hash = "sha256-P3acfGwHYjjZQcviPiOT7T7qzzP/drc2mibzrsrNP18=";
+  };
+  composer2nix =
+    pkgs.callPackage "${c2nix-src}/release.nix" {};
+in
+pkgs.mkShell {
+  buildInputs = [
+    pkgs.nix-prefetch-scripts
+    composer2nix.package.x86_64-linux
+  ];
+}
 ```
 
 Building a development version
